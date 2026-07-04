@@ -8,8 +8,10 @@ export default function TabLayout() {
       screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="index" />
+      <Tabs.Screen name="habits" />
       <Tabs.Screen name="progress" />
       <Tabs.Screen name="achievements" />
+      <Tabs.Screen name="settings" />
     </Tabs>
   );
 }
