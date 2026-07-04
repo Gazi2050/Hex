@@ -13,144 +13,103 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        border: "hsl(var(--border) / <alpha-value>)",
-        input: "hsl(var(--input) / <alpha-value>)",
-        ring: "hsl(var(--ring) / <alpha-value>)",
-        background: "hsl(var(--background) / <alpha-value>)",
-        foreground: "hsl(var(--foreground) / <alpha-value>)",
-        primary: {
-          DEFAULT: "hsl(var(--primary) / <alpha-value>)",
-          foreground: "hsl(var(--primary-foreground) / <alpha-value>)",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary) / <alpha-value>)",
-          foreground: "hsl(var(--secondary-foreground) / <alpha-value>)",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
-          foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted) / <alpha-value>)",
-          foreground: "hsl(var(--muted-foreground) / <alpha-value>)",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent) / <alpha-value>)",
-          foreground: "hsl(var(--accent-foreground) / <alpha-value>)",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover) / <alpha-value>)",
-          foreground: "hsl(var(--popover-foreground) / <alpha-value>)",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card) / <alpha-value>)",
-          foreground: "hsl(var(--card-foreground) / <alpha-value>)",
-        },
-        primitive: {
-          primary: {
-            50: "#FEF9E9",
-            100: "#FDF2D2",
-            200: "#FBE7AC",
-            300: "#F8DA86",
-            400: "#F5CC63",
-            500: "#F4D9A6",
-            600: "#DCBE8A",
-            700: "#B8976C",
-            800: "#8F7352",
-            900: "#665038",
-          },
-          secondary: {
-            50: "#EEF0FB",
-            100: "#DEE2F8",
-            200: "#C7CDF2",
-            300: "#AEB8EB",
-            400: "#95A2E3",
-            500: "#3D3D52",
-            600: "#35384B",
-            700: "#2A2E44",
-            800: "#20243B",
-            900: "#171A31",
-          },
-          tertiary: {
-            50: "#F1F4FF",
-            100: "#E3E8FF",
-            200: "#D3DBFD",
-            300: "#BFC8F5",
-            400: "#AAB5EC",
-            500: "#939FD8",
-            600: "#7E8BC1",
-            700: "#6977AA",
-            800: "#556493",
-            900: "#44517A",
-          },
-          neutral: {
-            50: "#F7F8FC",
-            100: "#EDEFF6",
-            200: "#DBDFEA",
-            300: "#C3C9D9",
-            400: "#A8AFC6",
-            500: "#8D95AF",
-            600: "#737B98",
-            700: "#5B637E",
-            800: "#3B4260",
-            900: "#2A2A3E",
-          },
-        },
+        /* Surface ladder */
         bg: {
           canvas: "rgb(var(--color-bg-canvas) / <alpha-value>)",
           surface: "rgb(var(--color-bg-surface) / <alpha-value>)",
           elevated: "rgb(var(--color-bg-elevated) / <alpha-value>)",
-          muted: "rgb(var(--color-bg-muted) / <alpha-value>)",
-          inverse: "rgb(var(--color-bg-inverse) / <alpha-value>)",
+          card: "rgb(var(--color-bg-card) / <alpha-value>)",
         },
         text: {
           primary: "rgb(var(--color-text-primary) / <alpha-value>)",
           secondary: "rgb(var(--color-text-secondary) / <alpha-value>)",
           muted: "rgb(var(--color-text-muted) / <alpha-value>)",
+          ash: "rgb(var(--color-text-ash) / <alpha-value>)",
+          stone: "rgb(var(--color-text-stone) / <alpha-value>)",
           inverse: "rgb(var(--color-text-inverse) / <alpha-value>)",
           accent: "rgb(var(--color-text-accent) / <alpha-value>)",
         },
-        border: {
-          subtle: "rgb(var(--color-border-subtle) / <alpha-value>)",
-          DEFAULT: "rgb(var(--color-border-default) / <alpha-value>)",
-          strong: "rgb(var(--color-border-strong) / <alpha-value>)",
-          accent: "rgb(var(--color-border-accent) / <alpha-value>)",
+        accent: {
+          DEFAULT: "rgb(var(--color-accent) / <alpha-value>)",
+          soft: "rgb(var(--color-accent-soft) / <alpha-value>)",
+          pressed: "rgb(var(--color-accent-pressed) / <alpha-value>)",
         },
-        action: {
-          primary: {
-            bg: "rgb(var(--color-action-primary-bg) / <alpha-value>)",
-            text: "rgb(var(--color-action-primary-text) / <alpha-value>)",
-            border: "rgb(var(--color-action-primary-border) / <alpha-value>)",
-          },
-          secondary: {
-            bg: "rgb(var(--color-action-secondary-bg) / <alpha-value>)",
-            text: "rgb(var(--color-action-secondary-text) / <alpha-value>)",
-            border: "rgb(var(--color-action-secondary-border) / <alpha-value>)",
-          },
-          inverted: {
-            bg: "rgb(var(--color-action-inverted-bg) / <alpha-value>)",
-            text: "rgb(var(--color-action-inverted-text) / <alpha-value>)",
-            border: "rgb(var(--color-action-inverted-border) / <alpha-value>)",
-          },
+        border: {
+          DEFAULT: "hsl(var(--border))",
+          hairline: "rgb(var(--color-border-hairline) / <alpha-value>)",
+          soft: "rgb(var(--color-border-soft) / <alpha-value>)",
+          strong: "rgb(var(--color-border-strong) / <alpha-value>)",
         },
         feedback: {
-          success: "rgb(var(--color-feedback-success) / <alpha-value>)",
-          warning: "rgb(var(--color-feedback-warning) / <alpha-value>)",
           danger: "rgb(var(--color-feedback-danger) / <alpha-value>)",
+          warning: "rgb(var(--color-feedback-warning) / <alpha-value>)",
           info: "rgb(var(--color-feedback-info) / <alpha-value>)",
+        },
+        cta: {
+          bg: "rgb(var(--color-cta-bg) / <alpha-value>)",
+          pressed: "rgb(var(--color-cta-pressed) / <alpha-value>)",
+        },
+        /* shadcn compat */
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
         },
       },
       fontFamily: {
-        headline: ["Manrope", "System"],
+        headline: ["Inter", "System"],
         body: ["Inter", "System"],
         label: ["Inter", "System"],
       },
       fontSize: {
+        /* DESIGN.md typography scale */
+        "display-lg": ["48px", { lineHeight: "52.8px", fontWeight: "600" }],
+        "heading-xl": ["28px", { lineHeight: "33.6px", fontWeight: "600" }],
+        "heading-lg": ["24px", { lineHeight: "28.8px", fontWeight: "600" }],
+        "heading-md": ["20px", { lineHeight: "26px", fontWeight: "500" }],
+        "body-lg": ["18px", { lineHeight: "27px", fontWeight: "400" }],
+        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+        "body-sm": ["14px", { lineHeight: "21px", fontWeight: "400" }],
+        "caption-md": ["13px", { lineHeight: "18.2px", fontWeight: "400", letterSpacing: "0.1px" }],
+        "caption-sm": ["12px", { lineHeight: "16.8px", fontWeight: "500", letterSpacing: "0.2px" }],
+        "button-md": ["15px", { lineHeight: "21px", fontWeight: "500", letterSpacing: "0.2px" }],
+        "button-sm": ["13px", { lineHeight: "18.2px", fontWeight: "500", letterSpacing: "0.2px" }],
+        /* Legacy shadcn compat */
         headline: ["32px", { lineHeight: "40px", letterSpacing: "-0.4px" }],
         body: ["16px", { lineHeight: "24px", letterSpacing: "0px" }],
         label: ["14px", { lineHeight: "20px", letterSpacing: "0.1px" }],
       },
       borderRadius: {
+        /* DESIGN.md radius scale */
+        xs: "4px",
+        sm: "6px",
+        md: "8px",
+        lg: "12px",
+        xl: "16px",
+        /* shadcn compat */
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",

@@ -1,75 +1,14 @@
-import { DarkTheme, DefaultTheme, type Theme } from "@react-navigation/native";
+import { DarkTheme, type Theme } from "@react-navigation/native";
 
-export const THEME = {
-  light: {
-    background: "hsl(var(--background))",
-    foreground: "hsl(var(--foreground))",
-    card: "hsl(var(--card))",
-    cardForeground: "hsl(var(--card-foreground))",
-    popover: "hsl(var(--popover))",
-    popoverForeground: "hsl(var(--popover-foreground))",
-    primary: "hsl(var(--primary))",
-    primaryForeground: "hsl(var(--primary-foreground))",
-    secondary: "hsl(var(--secondary))",
-    secondaryForeground: "hsl(var(--secondary-foreground))",
-    muted: "hsl(var(--muted))",
-    mutedForeground: "hsl(var(--muted-foreground))",
-    accent: "hsl(var(--accent))",
-    accentForeground: "hsl(var(--accent-foreground))",
-    destructive: "hsl(var(--destructive))",
-    destructiveForeground: "hsl(var(--destructive-foreground))",
-    border: "hsl(var(--border))",
-    input: "hsl(var(--input))",
-    ring: "hsl(var(--ring))",
-    radius: "0.625rem",
-  },
-  dark: {
-    background: "hsl(var(--background))",
-    foreground: "hsl(var(--foreground))",
-    card: "hsl(var(--card))",
-    cardForeground: "hsl(var(--card-foreground))",
-    popover: "hsl(var(--popover))",
-    popoverForeground: "hsl(var(--popover-foreground))",
-    primary: "hsl(var(--primary))",
-    primaryForeground: "hsl(var(--primary-foreground))",
-    secondary: "hsl(var(--secondary))",
-    secondaryForeground: "hsl(var(--secondary-foreground))",
-    muted: "hsl(var(--muted))",
-    mutedForeground: "hsl(var(--muted-foreground))",
-    accent: "hsl(var(--accent))",
-    accentForeground: "hsl(var(--accent-foreground))",
-    destructive: "hsl(var(--destructive))",
-    destructiveForeground: "hsl(var(--destructive-foreground))",
-    border: "hsl(var(--border))",
-    input: "hsl(var(--input))",
-    ring: "hsl(var(--ring))",
-    radius: "0.625rem",
-  },
-} as const;
-
-export const NAV_THEME: Record<"light" | "dark", Theme> = {
-  light: {
-    ...DefaultTheme,
-    colors: {
-      ...DefaultTheme.colors,
-      background: THEME.light.background,
-      border: THEME.light.border,
-      card: THEME.light.card,
-      notification: THEME.light.destructive,
-      primary: THEME.light.primary,
-      text: THEME.light.foreground,
-    },
-  },
-  dark: {
-    ...DarkTheme,
-    colors: {
-      ...DarkTheme.colors,
-      background: THEME.dark.background,
-      border: THEME.dark.border,
-      card: THEME.dark.card,
-      notification: THEME.dark.destructive,
-      primary: THEME.dark.primary,
-      text: THEME.dark.foreground,
-    },
+export const NAV_THEME: Theme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: "#07080A",
+    border: "#242728",
+    card: "#0D0D0D",
+    notification: "#FF6161",
+    primary: "#59D499",
+    text: "#F4F4F6",
   },
 };

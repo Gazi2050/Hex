@@ -1,69 +1,8 @@
-export type ThemeMode = "light" | "dark";
+export type ThemeMode = "dark";
 
-export type PrimitiveScale = {
-  50: string;
-  100: string;
-  200: string;
-  300: string;
-  400: string;
-  500: string;
-  600: string;
-  700: string;
-  800: string;
-  900: string;
-};
-
-export type PrimitivePalette = {
-  primary: PrimitiveScale;
-  secondary: PrimitiveScale;
-  tertiary: PrimitiveScale;
-  neutral: PrimitiveScale;
-};
-
-export type SemanticColors = {
-  bg: {
-    canvas: string;
-    surface: string;
-    elevated: string;
-    muted: string;
-    inverse: string;
-  };
-  text: {
-    primary: string;
-    secondary: string;
-    muted: string;
-    inverse: string;
-    accent: string;
-  };
-  border: {
-    subtle: string;
-    default: string;
-    strong: string;
-    accent: string;
-  };
-  action: {
-    primary: {
-      bg: string;
-      text: string;
-      border: string;
-    };
-    secondary: {
-      bg: string;
-      text: string;
-      border: string;
-    };
-    inverted: {
-      bg: string;
-      text: string;
-      border: string;
-    };
-  };
-  feedback: {
-    success: string;
-    warning: string;
-    danger: string;
-    info: string;
-  };
+export type Primitives = {
+  neutral: Record<50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900, string>;
+  green: Record<50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900, string>;
 };
 
 export type ThemeTypography = {
@@ -72,25 +11,47 @@ export type ThemeTypography = {
     body: string;
     label: string;
   };
-  fontSize: {
-    headline: string;
-    body: string;
-    label: string;
+};
+
+export type SemanticColors = {
+  bg: {
+    canvas: string;
+    surface: string;
+    elevated: string;
+    card: string;
   };
-  lineHeight: {
-    headline: string;
-    body: string;
-    label: string;
+  text: {
+    primary: string;
+    secondary: string;
+    muted: string;
+    ash: string;
+    stone: string;
+    inverse: string;
+    accent: string;
   };
-  letterSpacing: {
-    headline: string;
-    body: string;
-    label: string;
+  accent: {
+    DEFAULT: string;
+    soft: string;
+    pressed: string;
+  };
+  border: {
+    hairline: string;
+    soft: string;
+    strong: string;
+  };
+  feedback: {
+    danger: string;
+    warning: string;
+    info: string;
+  };
+  cta: {
+    bg: string;
+    pressed: string;
   };
 };
 
 export type ThemeTokens = {
-  primitives: PrimitivePalette;
+  primitives: Primitives;
   semantic: SemanticColors;
   typography: ThemeTypography;
 };
