@@ -116,5 +116,24 @@ export const X = createIcon('X', [
 export const ChevronDownIcon = ChevronDown;
 export const ChevronUpIcon = ChevronUp;
 
+export const CheckSquare = createIcon('CheckSquare', [
+  ['rect', { 'x': '3', 'y': '3', 'width': '18', 'height': '18', 'rx': '2' }],
+  ['path', { d: 'm9 12 2 2 4-4' }],
+]);
+
+export const BarChart3 = createIcon('BarChart3', [
+  ['path', { d: 'M3 3v18h18' }],
+  ['path', { d: 'M18 9V5' }],
+  ['path', { d: 'M13 15v-2' }],
+  ['path', { d: 'M8 15v-6' }],
+]);
+
+export const Trophy = createIcon('Trophy', [
+  ['path', { d: 'M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 6 4 6 4' }],
+  ['path', { d: 'M18 9h1.5a2.5 2.5 0 0 0 0-5C18 4 18 4 18 4' }],
+  ['path', { d: 'M4 22h16' }],
+  ['path', { d: 'M10 22V8c0-1.1.9-2 2-2s2 .9 2 2v14' }],
+]);
+
 export type LucideIcon = IconComponent;
 export type { IconProps as LucideProps };

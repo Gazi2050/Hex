@@ -1,7 +1,7 @@
-import { CompletionToggle } from "@/components/habits/completion-toggle";
-import { StreakBadge } from "@/components/habits/streak-badge";
+import { CompletionToggle } from "@/components/custom/completion-toggle";
+import { StreakBadge } from "@/components/custom/streak-badge";
 import { Text } from "@/components/ui/text";
-import type { Habit } from "@/lib/habits";
+import type { Habit } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import * as React from "react";
 import { Pressable, View } from "react-native";
