@@ -1,6 +1,6 @@
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
-import { Check } from "lucide-react-native";
+import { Check } from "@/components/icons";
 import * as React from "react";
 import { Pressable } from "react-native";
 import Animated, {
