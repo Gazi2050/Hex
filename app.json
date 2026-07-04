@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "rn-app",
-    "slug": "rn-app",
+    "name": "Hex",
+    "slug": "hex",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
-    "scheme": "rn-app",
+    "scheme": "hex",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
