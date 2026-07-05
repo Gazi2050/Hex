@@ -12,8 +12,10 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { LucideIcon } from "lucide-react-native";
-import { Home, ListTodo, LineChart, Settings2 } from "lucide-react-native";
+import { Home, ListTodo, LineChart, Settings2, Plus } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
+import { router } from "expo-router";
+import * as Haptics from "expo-haptics";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -32,6 +34,10 @@ const BAR_MARGIN    = 48; // 24px each side
 
 const INACTIVE_COLOR    = "#9C9C9D";
 const ACTIVE_ICON_COLOR = "#000000";
+
+const PLUS_SIZE       = 56;
+const PLUS_COLOR      = "#59D499"; // accent token — DESIGN.md:41
+const PLUS_ICON_COLOR = "#FFFFFF";
 
 // ─── Tab Toast ────────────────────────────────────────────────────────────────
 
@@ -146,20 +152,29 @@ export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
   const isFirstRender = useRef(true);
 
   const barWidth  = screenWidth - BAR_MARGIN;
-  const slotWidth = barWidth / state.routes.length;
+  const totalSlots = state.routes.length + 1; // 4 routes + 1 center action
+  const slotWidth = barWidth / totalSlots;
   const circleTop = (BAR_HEIGHT - CIRCLE_SIZE) / 2;
 
   const getCircleX = (index: number) =>
-    index * slotWidth + slotWidth / 2 - CIRCLE_SIZE / 2;
+    index < 2
+      ? index * slotWidth + slotWidth / 2 - CIRCLE_SIZE / 2
+      : (index + 1) * slotWidth + slotWidth / 2 - CIRCLE_SIZE / 2;
 
   // Shared values
   const circleX     = useSharedValue(getCircleX(state.index));
   const circleScale = useSharedValue(0.8);
   const circleBg    = useSharedValue(0); // 0 = #FFF, 1 = #E8E8E8 (pressed)
+  const plusScale   = useSharedValue(1);
 
   // Toast: label shown above bar on tab switch
   const [toastLabel, setToastLabel] = useState("");
   const [toastKey, setToastKey] = useState(0);
+
+  const handlePlusPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push("/create-habit");
+  };
 
   // First-render bouncy entrance: 0.8 → 1.15 → 1.0
   useEffect(() => {
@@ -197,6 +212,10 @@ export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
       [0, 1],
       ["#FFFFFF", "#E8E8E8"]
     ),
+  }));
+
+  const plusAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: plusScale.value }],
   }));
 
   const activeConfig = TAB_CONFIG[state.routes[state.index]?.name];
@@ -256,12 +275,90 @@ export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
           )}
         </Animated.View>
 
-        {/* ── Icon slots ───────────────────────────────────────────────── */}
-        {state.routes.map((route, index) => {
+        {/* ── Icon slots (left: tabs 0-1) ─────────────────────────────── */}
+        {state.routes.slice(0, 2).map((route, index) => {
           const config = TAB_CONFIG[route.name];
           if (!config) return null;
 
           const isFocused = state.index === index;
+
+          const onPress = () => {
+            const event = navigation.emit({
+              type: "tabPress",
+              target: route.key,
+              canPreventDefault: true,
+            });
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name);
+            }
+          };
+
+          const onLongPress = () => {
+            navigation.emit({ type: "tabLongPress", target: route.key });
+          };
+
+          return (
+            <SlotItem
+              key={route.key}
+              IconComponent={config.icon}
+              isFocused={isFocused}
+              slotWidth={slotWidth}
+              onPress={onPress}
+              onLongPress={onLongPress}
+              onPressIn={
+                isFocused
+                  ? () => {
+                      circleScale.value = withSpring(0.94, SPRING_SNAPPY);
+                      circleBg.value    = withTiming(1, { duration: 150 });
+                    }
+                  : undefined
+              }
+              onPressOut={
+                isFocused
+                  ? () => {
+                      circleScale.value = withSpring(1.0, SPRING_SNAPPY);
+                      circleBg.value    = withTiming(0, { duration: 150 });
+                    }
+                  : undefined
+              }
+            />
+          );
+        })}
+
+        {/* ── Center + button (flush, inline) ──────────────────────────── */}
+        <Animated.View
+          style={[
+            plusAnimatedStyle,
+            {
+              width: PLUS_SIZE,
+              height: PLUS_SIZE,
+              borderRadius: PLUS_SIZE / 2,
+              backgroundColor: PLUS_COLOR,
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 20,
+            },
+          ]}
+        >
+          <Pressable
+            onPress={handlePlusPress}
+            onPressIn={() => { plusScale.value = withSpring(0.92, SPRING_SNAPPY); }}
+            onPressOut={() => { plusScale.value = withSpring(1.0, SPRING_SNAPPY); }}
+            style={{ width: PLUS_SIZE, height: PLUS_SIZE, alignItems: "center", justifyContent: "center" }}
+            accessibilityRole="button"
+            accessibilityLabel="Create habit"
+          >
+            <Plus size={26} color={PLUS_ICON_COLOR} strokeWidth={2.75} />
+          </Pressable>
+        </Animated.View>
+
+        {/* ── Icon slots (right: tabs 2-3) ────────────────────────────── */}
+        {state.routes.slice(2).map((route, index) => {
+          const config = TAB_CONFIG[route.name];
+          if (!config) return null;
+
+          const routeIndex = index + 2;
+          const isFocused = state.index === routeIndex;
 
           const onPress = () => {
             const event = navigation.emit({
