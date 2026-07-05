@@ -78,6 +78,12 @@
       "sourceType": "autoskills-registry",
       "computedHash": "502eb06700e2c3cb1bd7f710860528f72281320bd5171a2087b05a090b573dc1"
     },
+    "react-native-chart-kit": {
+      "source": "chart-kit/react-native-chart-kit",
+      "sourceType": "github",
+      "skillPath": "skills/react-native-chart-kit/SKILL.md",
+      "computedHash": "e0ea584e255650ca00ff2ae35d0ec36e083723b383de9a64c5f99aab13e9b6c9"
+    },
     "seo": {
       "source": "addyosmani/web-quality-skills",
       "sourceType": "autoskills-registry",

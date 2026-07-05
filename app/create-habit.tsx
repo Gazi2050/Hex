@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useHabitStore } from "@/lib/store";
 import { Text } from "@/components/ui/text";
 import { 
   ArrowLeft, 
@@ -164,6 +165,7 @@ const DAYS_OF_WEEK = ["M", "T", "W", "T", "F", "S", "S"];
 
 export default function CreateHabitScreen() {
   const insets = useSafeAreaInsets();
+  const addHabit = useHabitStore((state) => state.addHabit);
   
   // Form states
   const [selectedIconName, setSelectedIconName] = useState("Hexagon");
@@ -239,9 +241,24 @@ export default function CreateHabitScreen() {
     }
     
     const timeString = `${hour}:${displayMin} ${isPm ? "PM" : "AM"}`;
-    alert(
-      `Successfully Created!\n\nName: ${name}\nType: ${isHabit ? "Habit" : "Todo"}\nIcon: ${selectedIconName}\nColor: ${selectedColor}\nFrequency: ${frequency}x/day\nReminder: ${reminder ? `ON (${timeString})` : "OFF"}`
-    );
+
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const activeDays = days.filter((_, idx) => repeatDays[idx]);
+    const repeatDesc = activeDays.length === 7 
+      ? `Every day • ${frequency}x/day` 
+      : `${activeDays.join(", ")} • ${frequency}x/day`;
+
+    addHabit({
+      name: name.trim(),
+      description: repeatDesc,
+      color: selectedColor,
+      iconName: selectedIconName,
+      repeatDays,
+      frequency,
+      reminder,
+      reminderTime: reminder ? timeString : undefined,
+    });
+
     router.back();
   };
 
@@ -257,9 +274,10 @@ export default function CreateHabitScreen() {
         <View className="flex-row items-center justify-between px-4 py-4 border-b border-border-hairline">
           <Pressable 
             onPress={() => router.back()}
-            className="w-10 h-10 items-center justify-center rounded-full bg-bg-surface border border-border-hairline active:bg-bg-elevated"
+            className="w-10 h-10 items-center justify-center rounded-full active:opacity-70"
+            style={{ backgroundColor: "#FFFFFF" }}
           >
-            <ArrowLeft size={20} color="#F4F4F6" />
+            <ArrowLeft size={20} color="#000000" strokeWidth={3} />
           </Pressable>
           <Text className="text-body-lg font-semibold text-text-primary">Create Habit</Text>
           <View className="w-10" />

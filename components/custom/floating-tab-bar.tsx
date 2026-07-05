@@ -12,8 +12,9 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { LucideIcon } from "lucide-react-native";
-import { Home, ListTodo, LineChart, Trophy, Settings2 } from "lucide-react-native";
+import { Home, ListTodo, LineChart, Trophy, Settings2, Plus } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
+import { router } from "expo-router";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -220,6 +221,36 @@ export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
       {toastLabel ? (
         <TabToast key={toastKey} label={toastLabel} />
       ) : null}
+
+      {/* Global FAB (+) */}
+      <Animated.View
+        style={{
+          position: "absolute",
+          bottom: BAR_HEIGHT + 16,
+          right: 24,
+          zIndex: 20,
+        }}
+      >
+        <Pressable
+          onPress={() => router.push("/create-habit")}
+          style={({ pressed }) => ({
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+            backgroundColor: "#FFFFFF",
+            alignItems: "center",
+            justifyContent: "center",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 8,
+            opacity: pressed ? 0.8 : 1,
+          })}
+        >
+          <Plus size={24} color="#000000" strokeWidth={3} />
+        </Pressable>
+      </Animated.View>
 
       {/* Pill container */}
       <View

@@ -1,21 +1,16 @@
-import { useState, useCallback, useMemo } from "react";
-import type { Habit } from "@/lib/types";
-import { MOCK_HABITS } from "@/lib/data/habits";
-import {
-  toggleHabitCompletion,
-  countCompleted,
-  sortByPendingFirst,
-} from "@/lib/actions/habit-actions";
+import { useCallback, useMemo } from "react";
+import { useHabitStore } from "@/lib/store";
+import { sortByPendingFirst, countCompleted } from "@/lib/actions/habit-actions";
 
 export function useHabits() {
-  const [habits, setHabits] = useState<Habit[]>(MOCK_HABITS);
+  const habits = useHabitStore((state) => state.habits);
+  const toggleHabit = useHabitStore((state) => state.toggleHabit);
 
   const handleToggle = useCallback((id: string) => {
-    setHabits((prev) => toggleHabitCompletion(prev, id));
-  }, []);
+    toggleHabit(id);
+  }, [toggleHabit]);
 
   const completedCount = useMemo(() => countCompleted(habits), [habits]);
-
   const sortedHabits = useMemo(() => sortByPendingFirst(habits), [habits]);
 
   return {

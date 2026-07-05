@@ -103,16 +103,12 @@ module.exports = {
         label: ["14px", { lineHeight: "20px", letterSpacing: "0.1px" }],
       },
       borderRadius: {
-        /* DESIGN.md radius scale */
+        /* DESIGN.md & shadcn radius scale */
         xs: "4px",
-        sm: "6px",
-        md: "8px",
-        lg: "12px",
+        sm: "calc(var(--radius) - 4px)", // 8px (sm)
+        md: "calc(var(--radius) - 2px)", // 10px (md)
+        lg: "var(--radius)",              // 12px (lg)
         xl: "16px",
-        /* shadcn compat */
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
       },
       borderWidth: {
         hairline: hairlineWidth(),
