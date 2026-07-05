@@ -3,7 +3,7 @@ import { PortalHost } from "@rn-primitives/portal";
 import { ThemeProvider } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { NAV_THEME } from "@/lib/theme";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import LoadingScreen from "./loading";
 import "./global.css";
 
@@ -11,9 +11,7 @@ export default function RootLayout() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+    const timer = setTimeout(() => setIsLoading(false), 1500);
     return () => clearTimeout(timer);
   }, []);
 
