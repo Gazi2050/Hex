@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Habit, HabitLog, Achievement } from "./types";
+import { generateDemoData } from "./seed-demo";
 
 export interface HabitState {
   habits: Habit[];
@@ -11,6 +12,7 @@ export interface HabitState {
   toggleHabit: (id: string, dateStr?: string) => void;
   deleteHabit: (id: string) => void;
   unlockAchievement: (id: string) => void;
+  loadDemoData: () => void;
 }
 
 const DEFAULT_ACHIEVEMENTS: Achievement[] = [
@@ -25,6 +27,32 @@ export const getLocalDateString = (d = new Date()): string => {
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+};
+
+// Safe storage wrapper to prevent crashes when native module is missing (e.g. mismatched Expo Go)
+const safeStorage = {
+  getItem: async (name: string) => {
+    try {
+      return await AsyncStorage.getItem(name);
+    } catch (error) {
+      console.warn("AsyncStorage getItem failed. Using memory storage for this session.");
+      return null;
+    }
+  },
+  setItem: async (name: string, value: string) => {
+    try {
+      await AsyncStorage.setItem(name, value);
+    } catch (error) {
+      console.warn("AsyncStorage setItem failed. Data will not persist after reload.");
+    }
+  },
+  removeItem: async (name: string) => {
+    try {
+      await AsyncStorage.removeItem(name);
+    } catch (error) {
+      console.warn("AsyncStorage removeItem failed.");
+    }
+  },
 };
 
 export const useHabitStore = create<HabitState>()(
@@ -120,10 +148,19 @@ export const useHabitStore = create<HabitState>()(
           ),
         }));
       },
+
+      loadDemoData: () => {
+        const demo = generateDemoData();
+        set({
+          habits: demo.habits,
+          logs: demo.logs,
+          achievements: demo.achievements,
+        });
+      },
     }),
     {
       name: "hex-habit-storage",
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => safeStorage),
     }
   )
 );

@@ -1,56 +1,67 @@
-import React from "react";
 import { View } from "react-native";
-import { Text } from "../ui/text";
-import StreakRing from "./streak-ring";
-import StatPill from "./stat-pill";
+import { StreakRing } from "@/components/ui/streak-ring";
+import { StatCard } from "@/components/ui/stat-card";
+import { Target, Trophy, Star, Zap } from "lucide-react-native";
 
 interface StreakHeroCardProps {
   streak: number;
   bestStreak: number;
-  totalDone: number;
-  achievements: number;
+  xp: number;
   todayCompleted: number;
   todayScheduled: number;
+  level: number;
+  levelName: string;
+  levelProgress?: number;
 }
 
 export default function StreakHeroCard({
   streak,
   bestStreak,
-  totalDone,
-  achievements,
+  xp,
   todayCompleted,
   todayScheduled,
+  level,
+  levelName,
+  levelProgress,
 }: StreakHeroCardProps) {
-  return (
-    <View 
-      style={{ backgroundColor: "#0D0D0D", borderColor: "#242728" }}
-      className="mb-6 rounded-2xl border p-4 flex-row items-center justify-between"
-    >
-      {/* Left Side: Streak Ring */}
-      <View className="items-center w-[120px] py-1 mr-4">
-        <View className="relative items-center justify-center">
-          <StreakRing streak={streak} completed={todayCompleted} scheduled={todayScheduled} />
-          
-          <View className="absolute bottom-[22px] items-center">
-            <Text 
-              style={{ color: streak > 0 ? "#59D499" : "#F4F4F6" }} 
-              className="text-heading-xl font-extrabold leading-tight"
-            >
-              {streak}
-            </Text>
-            <Text className="text-[10px] text-text-muted uppercase tracking-wider font-semibold">
-              streak
-            </Text>
-          </View>
-        </View>
-      </View>
+  const pct = todayScheduled > 0 ? todayCompleted / todayScheduled : 0;
 
-      {/* Right Side: StatPillList */}
-      <View className="flex-1 gap-2">
-        <StatPill label="Today" value={`${todayCompleted}/${todayScheduled} Done`} />
-        <StatPill label="Best Streak" value={`${bestStreak} days`} isAccent />
-        <StatPill label="Total Done" value={`${totalDone} times`} />
-        <StatPill label="Awards" value={`${achievements} unlocked`} />
+  return (
+    <View className="mb-6 rounded-[32px] border border-border-hairline bg-bg-elevated pt-5 px-5 pb-5 items-center">
+      <StreakRing streak={streak} completed={todayCompleted} scheduled={todayScheduled} />
+
+      <View className="w-full mt-4 gap-3">
+        {/* Row 1 */}
+        <View className="flex-row gap-3">
+          <StatCard
+            label="Today"
+            value={`${todayCompleted} / ${todayScheduled}`}
+            icon={Target}
+            showProgress
+            progress={pct}
+          />
+          <StatCard 
+            label="Best Streak" 
+            value={`${bestStreak} days`} 
+            icon={Trophy} 
+          />
+        </View>
+        {/* Row 2 */}
+        <View className="flex-row gap-3">
+          <StatCard
+            label="Level"
+            value={`L${level} · ${levelName}`}
+            icon={Star}
+            showProgress={levelProgress !== undefined}
+            progress={levelProgress}
+            valueClassName="text-text-accent"
+          />
+          <StatCard 
+            label="XP" 
+            value={`${xp}`} 
+            icon={Zap} 
+          />
+        </View>
       </View>
     </View>
   );

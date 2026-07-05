@@ -1,13 +1,11 @@
 import React, { useMemo } from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, View, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "@/components/ui/text";
 import { useHabits } from "@/lib/hooks/useHabits";
 import { useHabitStore } from "@/lib/store";
 import { calculateGlobalStats } from "@/lib/derived/stats";
-import { getContributionGraphData, getBarChartData } from "@/lib/derived/contribution";
 import StreakHeroCard from "@/components/home/streak-hero-card";
-import HistoryCard from "@/components/home/history-card";
 import { HabitRow } from "@/components/custom/habit-row";
 import { Hexagon } from "lucide-react-native";
 
@@ -17,25 +15,55 @@ export default function Index() {
   const habits = useHabitStore((state) => state.habits);
   const logs = useHabitStore((state) => state.logs);
   const achievements = useHabitStore((state) => state.achievements);
-
-  const unlockedAchievementsCount = useMemo(() => {
-    return achievements.filter((a) => a.unlockedAt !== null).length;
-  }, [achievements]);
+  const loadDemoData = useHabitStore((state) => state.loadDemoData);
 
   // Dynamic derived stats
   const stats = useMemo(() => {
     return calculateGlobalStats(habits, logs);
   }, [habits, logs]);
 
-  // Derived heatmap values (112 days / 16 weeks)
-  const heatmapData = useMemo(() => {
-    return getContributionGraphData(logs, 112);
-  }, [logs]);
+  const unlockedAchievementsCount = useMemo(() => {
+    return achievements.filter((a) => a.unlockedAt !== null).length;
+  }, [achievements]);
 
-  // Derived bar chart values (last 14 days)
-  const barData = useMemo(() => {
-    return getBarChartData(logs, 14);
-  }, [logs]);
+  const totalXP = useMemo(() => {
+    return (stats.totalDone * 15) + (unlockedAchievementsCount * 50);
+  }, [stats.totalDone, unlockedAchievementsCount]);
+
+  const levelInfo = useMemo(() => {
+    const xp = totalXP;
+    if (xp < 100) {
+      return {
+        level: 1,
+        levelName: "Cinder",
+        progress: xp / 100,
+      };
+    } else if (xp < 300) {
+      return {
+        level: 2,
+        levelName: "Ember",
+        progress: (xp - 100) / 200,
+      };
+    } else if (xp < 600) {
+      return {
+        level: 3,
+        levelName: "Spark",
+        progress: (xp - 300) / 300,
+      };
+    } else if (xp < 1000) {
+      return {
+        level: 4,
+        levelName: "Flame",
+        progress: (xp - 600) / 400,
+      };
+    } else {
+      return {
+        level: 5,
+        levelName: "Blaze",
+        progress: 1.0,
+      };
+    }
+  }, [totalXP]);
 
   return (
     <View className="flex-1 bg-bg-canvas">
@@ -60,26 +88,23 @@ export default function Index() {
             </Text>
           </View>
         </View>
-
+ 
         {/* 2. StreakHeroCard */}
         <StreakHeroCard
           streak={stats.streak}
           bestStreak={stats.bestStreak}
-          totalDone={stats.totalDone}
-          achievements={unlockedAchievementsCount}
+          xp={totalXP}
           todayCompleted={stats.todayCompleted}
           todayScheduled={stats.todayScheduled}
+          level={levelInfo.level}
+          levelName={levelInfo.levelName}
+          levelProgress={levelInfo.progress}
         />
 
-        {/* 3. HistoryCard */}
-        <View>
-          <HistoryCard heatmapData={heatmapData} barData={barData} />
-        </View>
-
-        {/* 4. HabitList */}
+        {/* 3. TaskList */}
         <View className="mb-6">
           <Text className="text-body-sm font-semibold text-text-ash uppercase tracking-wider mb-3">
-            Habits
+            Tasks
           </Text>
           
           <View className="rounded-2xl border border-border-hairline overflow-hidden">
@@ -92,14 +117,23 @@ export default function Index() {
                 />
               ))
             ) : (
-              <View style={{ backgroundColor: "#0D0D0D" }} className="p-8 items-center justify-center">
+              <View className="bg-bg-surface p-8 items-center justify-center">
                 <Hexagon size={48} color="#6A6B6C" strokeWidth={1.5} className="mb-4" />
                 <Text className="text-body-md text-text-muted text-center font-medium">
-                  No habits scheduled for today.
+                  No tasks scheduled for today.
                 </Text>
                 <Text className="text-body-sm text-text-ash text-center mt-1 font-medium">
                   Tap the + button to create a new habit!
                 </Text>
+                
+                <TouchableOpacity 
+                  onPress={loadDemoData}
+                  className="mt-6 bg-text-accent px-6 py-3 rounded-xl active:opacity-80"
+                >
+                  <Text className="text-bg-canvas font-bold text-body-md text-center">
+                    Load Demo Data
+                  </Text>
+                </TouchableOpacity>
               </View>
             )}
           </View>

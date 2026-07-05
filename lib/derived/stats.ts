@@ -82,28 +82,104 @@ export function calculateBestStreak(habitId: string, logs: HabitLog[]): number {
   return bestStreak;
 }
 
-// Global stats calculator
+// Calculate global stats based on "Perfect Days" (all scheduled tasks completed)
 export function calculateGlobalStats(habits: Habit[], logs: HabitLog[]) {
   const today = new Date();
+  const todayStr = getLocalDateString(today);
   const dayOfWeek = (today.getDay() + 6) % 7; // Monday is 0, Sunday is 6
   
   // Scheduled habits for today
-  const scheduledToday = habits.filter((h) => h.repeatDays[dayOfWeek]);
+  const scheduledToday = habits.filter((h) => h.repeatDays[dayOfWeek] && h.createdAt.slice(0, 10) <= todayStr);
   const completedTodayCount = scheduledToday.filter((h) => h.completedToday).length;
 
-  const currentStreaks = habits.map((h) => calculateCurrentStreak(h.id, logs));
-  const maxCurrentStreak = currentStreaks.length > 0 ? Math.max(...currentStreaks) : 0;
+  // Determine if a specific date was a "Perfect Day"
+  const isPerfectDay = (date: Date): boolean => {
+    const dateStr = getLocalDateString(date);
+    const dayOfWk = (date.getDay() + 6) % 7;
+    
+    const scheduled = habits.filter((h) => 
+      h.repeatDays[dayOfWk] && h.createdAt.slice(0, 10) <= dateStr
+    );
+    
+    // If nothing was scheduled, it's considered a pass (perfect) as long as it's not before the user started
+    if (scheduled.length === 0) return true;
+    
+    const completed = scheduled.filter((h) => 
+      logs.some((l) => l.habitId === h.id && l.date === dateStr)
+    );
+    
+    return completed.length === scheduled.length;
+  };
 
-  const bestStreaks = habits.map((h) => calculateBestStreak(h.id, logs));
-  const maxBestStreak = bestStreaks.length > 0 ? Math.max(...bestStreaks) : 0;
+  const firstHabitDateStr = habits.length > 0 
+    ? habits.reduce((min, h) => (h.createdAt < min ? h.createdAt : min), habits[0].createdAt).slice(0, 10)
+    : todayStr;
+
+  let globalStreak = 0;
+  
+  if (habits.length > 0) {
+    let checkDate = new Date(today);
+    let checkStr = getLocalDateString(checkDate);
+
+    // If today is perfect, start streak from today. Otherwise, check yesterday.
+    if (isPerfectDay(checkDate)) {
+      globalStreak++;
+    } else {
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      if (getLocalDateString(yesterday) >= firstHabitDateStr && isPerfectDay(yesterday)) {
+        checkDate = yesterday;
+        globalStreak++;
+      }
+    }
+
+    // If we have a streak started, count backwards
+    if (globalStreak > 0) {
+      while (true) {
+        checkDate.setDate(checkDate.getDate() - 1);
+        checkStr = getLocalDateString(checkDate);
+        
+        if (checkStr < firstHabitDateStr) break; // Don't count before first habit
+        
+        if (isPerfectDay(checkDate)) {
+          globalStreak++;
+        } else {
+          break;
+        }
+      }
+    }
+  }
+
+  // Calculate best global streak
+  let bestGlobalStreak = globalStreak; // At least current streak
+  let currentRun = 0;
+  
+  if (habits.length > 0) {
+    const start = new Date(firstHabitDateStr);
+    const end = new Date(todayStr);
+    
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      if (isPerfectDay(d)) {
+        currentRun++;
+        if (currentRun > bestGlobalStreak) {
+          bestGlobalStreak = currentRun;
+        }
+      } else {
+        currentRun = 0;
+      }
+    }
+  }
 
   const totalCompletions = logs.length;
 
   return {
-    streak: maxCurrentStreak,
-    bestStreak: maxBestStreak,
+    streak: globalStreak,
+    bestStreak: bestGlobalStreak,
     todayCompleted: completedTodayCount,
     todayScheduled: scheduledToday.length,
     totalDone: totalCompletions,
+    level: 1,
+    levelName: "Cinder",
+    levelProgress: 0,
   };
 }
