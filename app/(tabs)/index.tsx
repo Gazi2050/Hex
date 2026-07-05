@@ -14,56 +14,12 @@ export default function Index() {
   const { sortedHabits, handleToggle } = useHabits();
   const habits = useHabitStore((state) => state.habits);
   const logs = useHabitStore((state) => state.logs);
-  const achievements = useHabitStore((state) => state.achievements);
   const loadDemoData = useHabitStore((state) => state.loadDemoData);
 
   // Dynamic derived stats
   const stats = useMemo(() => {
     return calculateGlobalStats(habits, logs);
   }, [habits, logs]);
-
-  const unlockedAchievementsCount = useMemo(() => {
-    return achievements.filter((a) => a.unlockedAt !== null).length;
-  }, [achievements]);
-
-  const totalXP = useMemo(() => {
-    return (stats.totalDone * 15) + (unlockedAchievementsCount * 50);
-  }, [stats.totalDone, unlockedAchievementsCount]);
-
-  const levelInfo = useMemo(() => {
-    const xp = totalXP;
-    if (xp < 100) {
-      return {
-        level: 1,
-        levelName: "Cinder",
-        progress: xp / 100,
-      };
-    } else if (xp < 300) {
-      return {
-        level: 2,
-        levelName: "Ember",
-        progress: (xp - 100) / 200,
-      };
-    } else if (xp < 600) {
-      return {
-        level: 3,
-        levelName: "Spark",
-        progress: (xp - 300) / 300,
-      };
-    } else if (xp < 1000) {
-      return {
-        level: 4,
-        levelName: "Flame",
-        progress: (xp - 600) / 400,
-      };
-    } else {
-      return {
-        level: 5,
-        levelName: "Blaze",
-        progress: 1.0,
-      };
-    }
-  }, [totalXP]);
 
   return (
     <View className="flex-1 bg-bg-canvas">
@@ -93,12 +49,8 @@ export default function Index() {
         <StreakHeroCard
           streak={stats.streak}
           bestStreak={stats.bestStreak}
-          xp={totalXP}
           todayCompleted={stats.todayCompleted}
           todayScheduled={stats.todayScheduled}
-          level={levelInfo.level}
-          levelName={levelInfo.levelName}
-          levelProgress={levelInfo.progress}
         />
 
         {/* 3. TaskList */}

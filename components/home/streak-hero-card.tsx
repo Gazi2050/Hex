@@ -1,28 +1,20 @@
 import { View } from "react-native";
 import { StreakRing } from "@/components/ui/streak-ring";
 import { StatCard } from "@/components/ui/stat-card";
-import { Target, Trophy, Star, Zap } from "lucide-react-native";
+import { Target, Trophy } from "lucide-react-native";
 
 interface StreakHeroCardProps {
   streak: number;
   bestStreak: number;
-  xp: number;
   todayCompleted: number;
   todayScheduled: number;
-  level: number;
-  levelName: string;
-  levelProgress?: number;
 }
 
 export default function StreakHeroCard({
   streak,
   bestStreak,
-  xp,
   todayCompleted,
   todayScheduled,
-  level,
-  levelName,
-  levelProgress,
 }: StreakHeroCardProps) {
   const pct = todayScheduled > 0 ? todayCompleted / todayScheduled : 0;
 
@@ -44,22 +36,6 @@ export default function StreakHeroCard({
             label="Best Streak" 
             value={`${bestStreak} days`} 
             icon={Trophy} 
-          />
-        </View>
-        {/* Row 2 */}
-        <View className="flex-row gap-3">
-          <StatCard
-            label="Level"
-            value={`L${level} · ${levelName}`}
-            icon={Star}
-            showProgress={levelProgress !== undefined}
-            progress={levelProgress}
-            valueClassName="text-text-accent"
-          />
-          <StatCard 
-            label="XP" 
-            value={`${xp}`} 
-            icon={Zap} 
           />
         </View>
       </View>

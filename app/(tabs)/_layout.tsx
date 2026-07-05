@@ -13,7 +13,6 @@ export default function TabLayout() {
         <Tabs.Screen name="index" />
         <Tabs.Screen name="habits" />
         <Tabs.Screen name="progress" />
-        <Tabs.Screen name="achievements" />
         <Tabs.Screen name="settings" />
       </Tabs>
       <HeaderPlusButton />

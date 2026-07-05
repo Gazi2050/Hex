@@ -12,7 +12,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { LucideIcon } from "lucide-react-native";
-import { Home, ListTodo, LineChart, Trophy, Settings2 } from "lucide-react-native";
+import { Home, ListTodo, LineChart, Settings2 } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
@@ -21,7 +21,6 @@ const TAB_CONFIG: Record<string, { icon: LucideIcon; label: string }> = {
   index:        { icon: Home,      label: "Today" },
   habits:       { icon: ListTodo,  label: "Habits" },
   progress:     { icon: LineChart, label: "Progress" },
-  achievements: { icon: Trophy,    label: "Achievements" },
   settings:     { icon: Settings2, label: "Settings" },
 };
 
