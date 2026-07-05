@@ -2,48 +2,31 @@ import { useEffect } from "react";
 import { View } from "react-native";
 import { Image } from "expo-image";
 import { Text } from "@/components/ui/text";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
-  withSequence,
   withTiming,
+  Easing,
 } from "react-native-reanimated";
 
+const TRACK_WIDTH = 160;
+const INDICATOR_WIDTH = 56;
+
 export default function LoadingScreen() {
-  const logoScale = useSharedValue(0.9);
-  const logoOpacity = useSharedValue(0.5);
+  const insets = useSafeAreaInsets();
+
+  const logoScale = useSharedValue(0.92);
+  const logoOpacity = useSharedValue(0.6);
   const progress = useSharedValue(0);
 
   useEffect(() => {
-    // Breathing logo animation
-    logoScale.value = withRepeat(
-      withSequence(
-        withTiming(1.0, { duration: 1200 }),
-        withTiming(0.93, { duration: 1200 })
-      ),
-      -1,
-      true
-    );
+    const t = { duration: 1600, easing: Easing.inOut(Easing.ease) };
 
-    logoOpacity.value = withRepeat(
-      withSequence(
-        withTiming(1.0, { duration: 1200 }),
-        withTiming(0.6, { duration: 1200 })
-      ),
-      -1,
-      true
-    );
-
-    // Sliding indicator progress bar
-    progress.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 1500 }),
-        withTiming(0, { duration: 0 })
-      ),
-      -1,
-      false
-    );
+    logoScale.value = withRepeat(withTiming(1, t), -1, true);
+    logoOpacity.value = withRepeat(withTiming(1, t), -1, true);
+    progress.value = withRepeat(withTiming(1, t), -1, true);
   }, [logoScale, logoOpacity, progress]);
 
   const logoAnimatedStyle = useAnimatedStyle(() => ({
@@ -51,52 +34,58 @@ export default function LoadingScreen() {
     opacity: logoOpacity.value,
   }));
 
-  const progressBarStyle = useAnimatedStyle(() => ({
-    left: `${progress.value * 100}%`,
-    transform: [{ translateX: -40 }], // half of indicator width
+  const indicatorStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: progress.value * (TRACK_WIDTH - INDICATOR_WIDTH) },
+    ],
   }));
 
   return (
-    <View className="flex-1 items-center justify-between bg-bg-canvas py-24">
-      {/* Spacer to push down layout */}
+    <View
+      className="flex-1 items-center justify-between bg-bg-canvas"
+      style={{ paddingTop: insets.top + 64, paddingBottom: insets.bottom + 40 }}
+    >
       <View />
 
-      {/* Brand Section */}
       <View className="items-center">
-        <Animated.View style={logoAnimatedStyle} className="items-center justify-center">
+        <Animated.View
+          style={logoAnimatedStyle}
+          className="items-center justify-center"
+        >
           <Image
             source={require("../assets/logo_adaptive_foreground.png")}
             style={{ width: 140, height: 140 }}
             contentFit="contain"
           />
         </Animated.View>
-        
-        <Text className="text-display-md text-text-primary font-bold mt-6 tracking-[0.25em] uppercase">
+
+        <Text className="mt-6 text-display-lg font-bold uppercase tracking-[0.25em] text-text-primary">
           Hex
         </Text>
-        
-        <Text className="text-body-sm text-text-muted mt-2.5 tracking-[0.15em] font-semibold">
+
+        <Text className="mt-2.5 text-body-sm font-semibold tracking-[0.15em] text-text-muted">
           Habits & Tasks Redefined
         </Text>
       </View>
 
-      {/* Sleek Horizontal Loading Track */}
       <View className="items-center justify-center">
-        <View 
-          style={{ width: 160, height: 2, backgroundColor: "#242728", borderRadius: 999, overflow: "hidden" }}
-          className="relative"
+        <View
+          className="overflow-hidden rounded-full"
+          style={{
+            width: TRACK_WIDTH,
+            height: 2,
+            backgroundColor: "rgb(var(--color-border-hairline) / 0.5)",
+          }}
         >
-          <Animated.View 
+          <Animated.View
             style={[
-              progressBarStyle, 
-              { 
-                position: "absolute",
-                top: 0,
-                width: 80, 
-                height: 2, 
-                backgroundColor: "#59D499", // mint accent
-              }
-            ]} 
+              indicatorStyle,
+              {
+                width: INDICATOR_WIDTH,
+                height: 2,
+                backgroundColor: "#59D499",
+              },
+            ]}
           />
         </View>
       </View>
