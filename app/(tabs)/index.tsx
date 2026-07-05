@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { ScrollView, View, TouchableOpacity } from "react-native";
+import React, { useMemo, useState } from "react";
+import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "@/components/ui/text";
 import { useHabits } from "@/lib/hooks/useHabits";
@@ -7,16 +7,16 @@ import { useHabitStore } from "@/lib/store";
 import { calculateGlobalStats } from "@/lib/derived/stats";
 import StreakHeroCard from "@/components/home/streak-hero-card";
 import { HabitRow } from "@/components/custom/habit-row";
+import { HabitDetailSheet } from "@/components/custom/habit-detail-sheet";
 import { Hexagon } from "lucide-react-native";
 
 export default function Index() {
   const insets = useSafeAreaInsets();
   const { sortedHabits, handleToggle } = useHabits();
+  const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
   const habits = useHabitStore((state) => state.habits);
   const logs = useHabitStore((state) => state.logs);
-  const loadDemoData = useHabitStore((state) => state.loadDemoData);
 
-  // Dynamic derived stats
   const stats = useMemo(() => {
     return calculateGlobalStats(habits, logs);
   }, [habits, logs]);
@@ -31,7 +31,6 @@ export default function Index() {
           paddingHorizontal: 16 
         }}
       >
-        {/* 1. ScreenHeader */}
         <View className="mb-6 flex-row justify-between items-center mt-2">
           <View>
             <Text className="text-heading-xl text-text-primary font-bold">Today</Text>
@@ -45,7 +44,6 @@ export default function Index() {
           </View>
         </View>
  
-        {/* 2. StreakHeroCard */}
         <StreakHeroCard
           streak={stats.streak}
           bestStreak={stats.bestStreak}
@@ -53,7 +51,6 @@ export default function Index() {
           todayScheduled={stats.todayScheduled}
         />
 
-        {/* 3. TaskList */}
         <View className="mb-6">
           <Text className="text-body-sm font-semibold text-text-ash uppercase tracking-wider mb-3">
             Tasks
@@ -66,6 +63,7 @@ export default function Index() {
                   key={habit.id}
                   habit={habit}
                   onToggle={handleToggle}
+                  onPress={(h) => setSelectedHabitId(h.id)}
                 />
               ))
             ) : (
@@ -77,20 +75,12 @@ export default function Index() {
                 <Text className="text-body-sm text-text-ash text-center mt-1 font-medium">
                   Tap the + button to create a new habit!
                 </Text>
-                
-                <TouchableOpacity 
-                  onPress={loadDemoData}
-                  className="mt-6 bg-text-accent px-6 py-3 rounded-xl active:opacity-80"
-                >
-                  <Text className="text-bg-canvas font-bold text-body-md text-center">
-                    Load Demo Data
-                  </Text>
-                </TouchableOpacity>
               </View>
             )}
           </View>
         </View>
       </ScrollView>
+      <HabitDetailSheet habitId={selectedHabitId} onClose={() => setSelectedHabitId(null)} />
     </View>
   );
 }

@@ -1,28 +1,9 @@
 import { Alert, ScrollView, View, Pressable } from "react-native";
 import { Text } from "@/components/ui/text";
 import { useHabitStore } from "@/lib/store";
-import { generateDemoData } from "@/lib/seed-demo";
 
 export default function SettingsScreen() {
   const set = useHabitStore.setState;
-
-  const handleLoadDemo = () => {
-    Alert.alert(
-      "Load Demo Data",
-      "This will replace all your current data with sample habits and 60 days of history. Continue?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Load Demo",
-          style: "destructive",
-          onPress: () => {
-            const { habits, logs, achievements } = generateDemoData();
-            set({ habits, logs, achievements });
-          },
-        },
-      ]
-    );
-  };
 
   const handleClearData = () => {
     Alert.alert(
@@ -67,16 +48,8 @@ export default function SettingsScreen() {
       <View className="mb-4 rounded-2xl border border-border-hairline bg-bg-surface p-4">
         <Text className="text-body-lg font-semibold text-text-primary">Developer</Text>
         <Pressable
-          onPress={handleLoadDemo}
-          className="mt-3 rounded-xl bg-accent px-4 py-3 items-center"
-        >
-          <Text className="text-body-sm font-bold text-inverse">
-            Load Demo Data
-          </Text>
-        </Pressable>
-        <Pressable
           onPress={handleClearData}
-          className="mt-2 rounded-xl border border-feedback-danger px-4 py-3 items-center"
+          className="mt-3 rounded-xl border border-feedback-danger px-4 py-3 items-center"
         >
           <Text className="text-body-sm font-bold text-feedback-danger">
             Clear All Data

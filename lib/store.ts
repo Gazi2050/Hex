@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Habit, HabitLog, Achievement } from "./types";
-import { generateDemoData } from "./seed-demo";
 
 export interface HabitState {
   habits: Habit[];
@@ -10,9 +9,9 @@ export interface HabitState {
   achievements: Achievement[];
   addHabit: (habit: Omit<Habit, "id" | "streak" | "bestStreak" | "completedToday" | "createdAt">) => void;
   toggleHabit: (id: string, dateStr?: string) => void;
+  updateHabit: (id: string, updates: Partial<Omit<Habit, "id" | "createdAt">>) => void;
   deleteHabit: (id: string) => void;
   unlockAchievement: (id: string) => void;
-  loadDemoData: () => void;
 }
 
 const DEFAULT_ACHIEVEMENTS: Achievement[] = [
@@ -29,27 +28,25 @@ export const getLocalDateString = (d = new Date()): string => {
   return `${year}-${month}-${day}`;
 };
 
-// Safe storage wrapper to prevent crashes when native module is missing (e.g. mismatched Expo Go)
 const safeStorage = {
   getItem: async (name: string) => {
     try {
       return await AsyncStorage.getItem(name);
-    } catch (error) {
-      console.warn("AsyncStorage getItem failed. Using memory storage for this session.");
+    } catch {
       return null;
     }
   },
   setItem: async (name: string, value: string) => {
     try {
       await AsyncStorage.setItem(name, value);
-    } catch (error) {
+    } catch {
       console.warn("AsyncStorage setItem failed. Data will not persist after reload.");
     }
   },
   removeItem: async (name: string) => {
     try {
       await AsyncStorage.removeItem(name);
-    } catch (error) {
+    } catch {
       console.warn("AsyncStorage removeItem failed.");
     }
   },
@@ -132,6 +129,14 @@ export const useHabitStore = create<HabitState>()(
         });
       },
 
+      updateHabit: (id, updates) => {
+        set((state) => ({
+          habits: state.habits.map((h) =>
+            h.id === id ? { ...h, ...updates, id: h.id, createdAt: h.createdAt } : h
+          ),
+        }));
+      },
+
       deleteHabit: (id) => {
         set((state) => ({
           habits: state.habits.filter((h) => h.id !== id),
@@ -147,15 +152,6 @@ export const useHabitStore = create<HabitState>()(
               : a
           ),
         }));
-      },
-
-      loadDemoData: () => {
-        const demo = generateDemoData();
-        set({
-          habits: demo.habits,
-          logs: demo.logs,
-          achievements: demo.achievements,
-        });
       },
     }),
     {

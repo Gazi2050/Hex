@@ -3,6 +3,7 @@ import { PortalHost } from "@rn-primitives/portal";
 import { ThemeProvider } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { NAV_THEME } from "@/lib/theme";
+import { ToastContainer } from "@ncrft/native-toast";
 import { useCallback, useEffect, useState } from "react";
 import LoadingScreen from "./loading";
 import "./global.css";
@@ -39,6 +40,7 @@ export default function RootLayout() {
       )}
 
       <PortalHost />
+      <ToastContainer />
     </ThemeProvider>
   );
 }
