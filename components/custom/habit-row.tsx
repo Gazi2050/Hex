@@ -37,9 +37,32 @@ function HabitRow({ habit, onToggle, onPress, className }: HabitRowProps) {
         >
           {habit.name}
         </Text>
-        <Text className="text-body-sm text-text-secondary mt-0.5">
-          {habit.description}
-        </Text>
+        <View className="flex-row items-center gap-2 mt-1">
+          <View
+            style={{ backgroundColor: habit.color }}
+            className="px-2 py-0.5 rounded-md"
+          >
+            <Text
+              style={{ color: "#000000" }}
+              className="text-caption-sm font-bold"
+            >
+              {habit.frequency}×
+            </Text>
+          </View>
+          <View className="flex-row items-center gap-1">
+            {habit.repeatDays.map((active, i) => (
+              <View
+                key={i}
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: active ? habit.color : "#2a2a2c",
+                }}
+              />
+            ))}
+          </View>
+        </View>
       </View>
       <StreakBadge streak={habit.streak} />
     </Pressable>

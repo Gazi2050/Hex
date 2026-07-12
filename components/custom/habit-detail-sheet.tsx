@@ -1,32 +1,21 @@
-import { Modal, Pressable, View } from "react-native";
+import { useMemo } from "react";
+import { Modal, Pressable, View, useWindowDimensions } from "react-native";
 import { router } from "expo-router";
-import { useHabitStore, getLocalDateString } from "@/lib/store";
+import { useHabitStore } from "@/lib/store";
 import { calculateCurrentStreak, calculateBestStreak } from "@/lib/derived/stats";
 import { Text } from "@/components/ui/text";
 import { Flame, Trophy, Pencil } from "lucide-react-native";
+import { MiniCubeHeatmap } from "@/components/custom/mini-cube-heatmap";
 
 interface HabitDetailSheetProps {
   habitId: string | null;
   onClose: () => void;
 }
 
-function buildLast7Days(habitId: string, logs: { habitId: string; date: string }[]) {
-  const labels = ["M", "T", "W", "T", "F", "S", "S"];
-  const days = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const dateStr = getLocalDateString(d);
-    const dayOfWeek = (d.getDay() + 6) % 7;
-    days.push({
-      label: labels[dayOfWeek],
-      completed: logs.some((l) => l.habitId === habitId && l.date === dateStr),
-    });
-  }
-  return days;
-}
+const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
 
 export function HabitDetailSheet({ habitId, onClose }: HabitDetailSheetProps) {
+  const { width: windowWidth } = useWindowDimensions();
   const habits = useHabitStore((s) => s.habits);
   const logs = useHabitStore((s) => s.logs);
   const habit = habits.find((h) => h.id === habitId);
@@ -34,7 +23,15 @@ export function HabitDetailSheet({ habitId, onClose }: HabitDetailSheetProps) {
 
   const currentStreak = habit ? calculateCurrentStreak(habit.id, logs) : 0;
   const bestStreak = habit ? calculateBestStreak(habit.id, logs) : 0;
-  const last7Days = habit ? buildLast7Days(habit.id, logs) : [];
+
+  const chartWidth = useMemo(() => windowWidth - 48, [windowWidth]);
+
+  const completedSet = useMemo(() => {
+    if (!habit) return new Set<string>();
+    return new Set(
+      logs.filter((l) => l.habitId === habit.id).map((l) => l.date)
+    );
+  }, [habit, logs]);
 
   const handleEdit = () => {
     onClose();
@@ -63,7 +60,17 @@ export function HabitDetailSheet({ habitId, onClose }: HabitDetailSheetProps) {
                 </View>
                 <View className="flex-1">
                   <Text className="text-body-lg font-semibold text-text-primary">{habit.name}</Text>
-                  <Text className="text-body-sm text-text-muted">{habit.description}</Text>
+                  <View
+                    style={{ backgroundColor: habit.color }}
+                    className="self-start mt-1.5 px-2 py-0.5 rounded-md"
+                  >
+                    <Text
+                      style={{ color: "#000000" }}
+                      className="text-caption-sm font-bold"
+                    >
+                      {habit.frequency}×
+                    </Text>
+                  </View>
                 </View>
               </View>
 
@@ -86,21 +93,42 @@ export function HabitDetailSheet({ habitId, onClose }: HabitDetailSheetProps) {
 
               <View className="mb-6">
                 <Text className="text-body-sm font-semibold text-text-muted uppercase tracking-wider mb-3">
-                  Last 7 Days
+                  Schedule
                 </Text>
                 <View className="flex-row justify-between">
-                  {last7Days.map((day, idx) => (
-                    <View key={idx} className="items-center">
-                      <View
-                        className="w-9 h-9 rounded-lg items-center justify-center mb-1"
-                        style={{ backgroundColor: day.completed ? habit.color : "#131313" }}
-                      >
-                        {day.completed && <Text className="text-text-inverse font-bold">✓</Text>}
+                  {DAY_LABELS.map((label, idx) => {
+                    const active = habit.repeatDays[idx];
+                    return (
+                      <View key={idx} className="items-center">
+                        <View
+                          className="w-10 h-10 rounded-xl items-center justify-center"
+                          style={{
+                            backgroundColor: active ? habit.color : "#131313",
+                          }}
+                        >
+                          <Text
+                            style={{ color: active ? "#000000" : "#9C9C9D" }}
+                            className="font-bold text-body-sm"
+                          >
+                            {label}
+                          </Text>
+                        </View>
                       </View>
-                      <Text className="text-caption-sm text-text-muted">{day.label}</Text>
-                    </View>
-                  ))}
+                    );
+                  })}
                 </View>
+              </View>
+
+              <View className="mb-6">
+                <Text className="text-body-sm font-semibold text-text-muted uppercase tracking-wider mb-3">
+                  Activity
+                </Text>
+                <MiniCubeHeatmap
+                  completedSet={completedSet}
+                  color={habit.color}
+                  weeks={26}
+                  width={chartWidth}
+                />
               </View>
 
               <Pressable
