@@ -31,17 +31,15 @@ export default function Index() {
           paddingHorizontal: 16 
         }}
       >
-        <View className="mb-6 flex-row justify-between items-center mt-2">
-          <View>
-            <Text className="text-heading-xl text-text-primary font-bold">Today</Text>
-            <Text className="text-body-sm text-text-muted mt-1">
-              {new Date().toLocaleDateString("en-US", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-              })}
-            </Text>
-          </View>
+        <View className="mb-6 items-center mt-2">
+          <Text className="text-heading-xl text-text-primary font-bold">Today</Text>
+          <Text className="text-body-sm text-text-muted mt-1">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            })}
+          </Text>
         </View>
  
         <StreakHeroCard
@@ -53,7 +51,7 @@ export default function Index() {
 
         <View className="mb-6">
           <Text className="text-body-sm font-semibold text-text-ash uppercase tracking-wider mb-3">
-            Tasks
+            ToDo
           </Text>
           
           <View className="rounded-2xl border border-border-hairline overflow-hidden">
