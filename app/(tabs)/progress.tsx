@@ -55,9 +55,9 @@ export default function ProgressScreen() {
           ].map((item, i) => (
             <View
               key={i}
-              className="flex-1 rounded-2xl border border-border-hairline bg-bg-surface p-4 items-center"
+              className="flex-1 rounded-2xl border border-border-hairline bg-bg-surface p-3 items-center"
             >
-              <item.icon size={18} color="#FFFFFF" strokeWidth={2.5} />
+              <item.icon size={22} color="#59D499" strokeWidth={2.5} />
               <Text className="font-bold mt-2" style={{ fontSize: 10, color: "#6A6B6C" }}>
                 {item.label}
               </Text>
@@ -74,9 +74,9 @@ export default function ProgressScreen() {
           ].map((item, i) => (
             <View
               key={i}
-              className="flex-1 rounded-2xl border border-border-hairline bg-bg-surface p-4 items-center"
+              className="flex-1 rounded-2xl border border-border-hairline bg-bg-surface p-3 items-center"
             >
-              <item.icon size={18} color="#FFFFFF" strokeWidth={2.5} />
+              <item.icon size={22} color="#59D499" strokeWidth={2.5} />
               <Text className="font-bold mt-2" style={{ fontSize: 10, color: "#6A6B6C" }}>
                 {item.label}
               </Text>
