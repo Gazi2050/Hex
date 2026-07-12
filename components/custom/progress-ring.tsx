@@ -5,7 +5,7 @@ import { View } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedProps,
-  withSpring,
+  withTiming,
   withDelay,
 } from "react-native-reanimated";
 import Svg, { Circle } from "react-native-svg";
@@ -30,7 +30,7 @@ function ProgressRing({ completed, total, className }: ProgressRingProps) {
   React.useEffect(() => {
     progress.value = withDelay(
       150,
-      withSpring(percentage, { damping: 30, stiffness: 300 })
+      withTiming(percentage, { duration: 600 })
     );
   }, [percentage, progress]);
 

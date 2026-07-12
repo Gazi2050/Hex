@@ -19,10 +19,10 @@ export default function StreakHeroCard({
   const pct = todayScheduled > 0 ? todayCompleted / todayScheduled : 0;
 
   return (
-    <View className="mb-6 rounded-[32px] border border-border-hairline bg-bg-elevated pt-5 px-5 pb-5 items-center">
+    <View className="mb-4 rounded-[32px] border border-border-hairline bg-bg-elevated pt-4 px-4 pb-4 items-center">
       <StreakRing streak={streak} completed={todayCompleted} scheduled={todayScheduled} />
 
-      <View className="w-full mt-4 gap-3">
+      <View className="w-full mt-3 gap-3">
         {/* Row 1 */}
         <View className="flex-row gap-3">
           <StatCard

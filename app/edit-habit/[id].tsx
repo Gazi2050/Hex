@@ -16,6 +16,7 @@ export default function EditHabitScreen() {
   const deleteHabit = useHabitStore((s) => s.deleteHabit);
 
   const habit = habits.find((h) => h.id === id);
+  const existingPriorityCount = habits.filter((h) => h.priority && h.id !== id).length;
 
   useEffect(() => {
     if (id && !habit) router.back();
@@ -70,6 +71,7 @@ export default function EditHabitScreen() {
             frequency: habit.frequency,
             reminder: habit.reminder,
             reminderTime: habit.reminderTime,
+            priority: habit.priority,
           }}
           onSubmit={(values) => {
             updateHabit(habit.id, values);
@@ -78,6 +80,7 @@ export default function EditHabitScreen() {
           }}
           submitLabel="Save Changes"
           onDelete={handleDelete}
+          existingPriorityCount={existingPriorityCount}
         />
       </View>
     </KeyboardAvoidingView>

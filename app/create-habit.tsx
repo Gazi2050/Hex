@@ -10,6 +10,8 @@ import { HabitForm } from "@/components/habit-form";
 export default function CreateHabitScreen() {
   const insets = useSafeAreaInsets();
   const addHabit = useHabitStore((state) => state.addHabit);
+  const habits = useHabitStore((state) => state.habits);
+  const existingPriorityCount = habits.filter((h) => h.priority).length;
 
   return (
     <KeyboardAvoidingView
@@ -38,6 +40,7 @@ export default function CreateHabitScreen() {
             router.back();
           }}
           submitLabel="Create Habit"
+          existingPriorityCount={existingPriorityCount}
         />
       </View>
     </KeyboardAvoidingView>

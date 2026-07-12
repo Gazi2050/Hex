@@ -45,17 +45,21 @@ export function calculateWeeklyBars(
   return result;
 }
 
-export function calculateMonthRate(habits: Habit[], logs: HabitLog[]): number {
-  if (habits.length === 0) return 0;
+export function calculateMonthRate(
+  habits: Habit[],
+  logs: HabitLog[]
+): { rate: number; completed: number; scheduled: number } {
+  if (habits.length === 0) return { rate: 0, completed: 0, scheduled: 0 };
 
   const logSet = new Set(logs.map((l) => `${l.habitId}|${l.date}`));
+  const today = new Date();
+  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
   let totalScheduled = 0;
   let totalCompleted = 0;
 
-  for (let i = 0; i < 30; i++) {
-    const d = dateNDaysAgo(i);
-    const dateStr = getLocalDateString(d);
+  for (let d = new Date(firstOfMonth); d <= today; d.setDate(d.getDate() + 1)) {
+    const dateStr = getLocalDateString(new Date(d));
     const dayOfWeek = (d.getDay() + 6) % 7;
 
     const scheduled = habits.filter(
@@ -67,7 +71,11 @@ export function calculateMonthRate(habits: Habit[], logs: HabitLog[]): number {
     ).length;
   }
 
-  return totalScheduled > 0 ? totalCompleted / totalScheduled : 0;
+  return {
+    rate: totalScheduled > 0 ? totalCompleted / totalScheduled : 0,
+    completed: totalCompleted,
+    scheduled: totalScheduled,
+  };
 }
 
 export function calculateTotals(

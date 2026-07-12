@@ -31,6 +31,7 @@ export type HabitFormValues = {
   frequency: number;
   reminder: boolean;
   reminderTime?: string;
+  priority: boolean;
 };
 
 export interface HabitFormProps {
@@ -38,6 +39,7 @@ export interface HabitFormProps {
   onSubmit: (values: HabitFormValues) => void;
   submitLabel: string;
   onDelete?: () => void;
+  existingPriorityCount?: number;
 }
 
 function parseTimeString(
@@ -72,6 +74,7 @@ export function HabitForm({
   onSubmit,
   submitLabel,
   onDelete,
+  existingPriorityCount = 0,
 }: HabitFormProps) {
   const insets = useSafeAreaInsets();
 
@@ -89,6 +92,7 @@ export function HabitForm({
   );
   const [frequency, setFrequency] = useState(initialValues?.frequency ?? 1);
   const [reminder, setReminder] = useState(initialValues?.reminder ?? false);
+  const [priorityChecked, setPriorityChecked] = useState(initialValues?.priority ?? false);
   const [hour, setHour] = useState(parsed.hour);
   const [minute, setMinute] = useState(parsed.minute);
   const [isPm, setIsPm] = useState(parsed.isPm);
@@ -168,6 +172,7 @@ export function HabitForm({
       frequency,
       reminder,
       reminderTime: reminder ? timeString : undefined,
+      priority: priorityChecked,
     });
   };
 
@@ -372,6 +377,33 @@ export function HabitForm({
               className="w-9 h-9 items-center justify-center rounded-full bg-bg-canvas border border-border-hairline active:scale-90"
             >
               <Plus size={16} color="#F4F4F6" />
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Priority */}
+        <View className="mb-6 bg-bg-surface border border-border-hairline p-4 rounded-xl">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-1 mr-3">
+              <Text className="text-body-md font-semibold text-text-primary">
+                Show on Home
+              </Text>
+              <Text className="text-body-sm text-text-muted mt-0.5">
+                Display as a priority task{!priorityChecked && existingPriorityCount >= 3 ? " (max 3 reached)" : ""}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => {
+                if (!priorityChecked && existingPriorityCount >= 3) return;
+                setPriorityChecked(!priorityChecked);
+              }}
+              className="w-6 h-6 rounded-md border-2 items-center justify-center active:scale-90"
+              style={{
+                backgroundColor: priorityChecked ? "#59D499" : "transparent",
+                borderColor: priorityChecked ? "#59D499" : "#6A6B6C",
+              }}
+            >
+              {priorityChecked && <Check size={14} color="#000000" strokeWidth={3} />}
             </Pressable>
           </View>
         </View>

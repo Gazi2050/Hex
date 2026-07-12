@@ -5,7 +5,7 @@ import Svg, { Circle } from "react-native-svg";
 import Animated, {
   useSharedValue,
   useAnimatedProps,
-  withSpring,
+  withTiming,
   withDelay,
 } from "react-native-reanimated";
 import { Text } from "@/components/ui/text";
@@ -24,8 +24,8 @@ function StreakRing({ streak, completed, scheduled }: StreakRingProps) {
   const percentage = scheduled > 0 ? Math.min(1, Math.max(0, completed / scheduled)) : 0;
   const { border, accent, text } = themeTokens.semantic;
   
-  const size = 148;
-  const strokeWidth = 8;
+  const size = 138;
+  const strokeWidth = 7;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   
@@ -38,7 +38,7 @@ function StreakRing({ streak, completed, scheduled }: StreakRingProps) {
   React.useEffect(() => {
     progress.value = withDelay(
       300,
-      withSpring(percentage, { damping: 24, stiffness: 120 })
+      withTiming(percentage, { duration: 600 })
     );
   }, [percentage, progress]);
 
@@ -79,14 +79,14 @@ function StreakRing({ streak, completed, scheduled }: StreakRingProps) {
       >
         <Image
           source={flameSource}
-          style={{ width: 46, height: 46, marginBottom: -2 }}
+          style={{ width: 36, height: 36, marginBottom: -2 }}
           contentFit="contain"
         />
         <Text
           style={{
             color: streak > 0 ? accent.DEFAULT : text.primary,
-            fontSize: 36,
-            lineHeight: 36,
+            fontSize: 30,
+            lineHeight: 30,
           }}
           className="font-black text-center"
         >

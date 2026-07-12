@@ -17,10 +17,15 @@ export function useHabits() {
 
   const completedCount = useMemo(() => countCompleted(habits), [habits]);
   const sortedHabits = useMemo(() => sortByPendingFirst(habits), [habits]);
+  const priorityHabits = useMemo(
+    () => sortByPendingFirst(habits.filter((h) => h.priority)).slice(0, 3),
+    [habits]
+  );
 
   return {
     habits,
     sortedHabits,
+    priorityHabits,
     completedCount,
     handleToggle,
     totalCount: habits.length,

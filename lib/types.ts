@@ -8,6 +8,7 @@ export type Habit = {
   frequency: number;
   reminder: boolean;
   reminderTime?: string;
+  priority: boolean;
   streak: number;
   bestStreak: number;
   completedToday: boolean;

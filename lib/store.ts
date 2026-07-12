@@ -62,6 +62,7 @@ export const useHabitStore = create<HabitState>()(
       addHabit: (newHabit) => {
         const id = Math.random().toString(36).substring(2, 9);
         const habit: Habit = {
+          priority: false,
           ...newHabit,
           id,
           streak: 0,

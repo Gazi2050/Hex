@@ -25,7 +25,7 @@ export default function ProgressScreen() {
 
   const stats = useMemo(() => calculateGlobalStats(habits, logs), [habits, logs]);
   const weekBars = useMemo(() => calculateWeeklyBars(habits, logs), [habits, logs]);
-  const monthRate = useMemo(() => calculateMonthRate(habits, logs), [habits, logs]);
+  const monthData = useMemo(() => calculateMonthRate(habits, logs), [habits, logs]);
   const yearlyTrend = useMemo(() => calculateYearlyTrend(logs), [logs]);
   const totals = useMemo(() => calculateTotals(habits, logs), [habits, logs]);
 
@@ -109,18 +109,26 @@ export default function ProgressScreen() {
       </View>
 
       {/* Month progress ring */}
-      <View className="mb-4 rounded-2xl border border-border-hairline bg-bg-surface p-5 flex-row items-center">
-        <MonthProgressRing rate={monthRate} />
-        <View className="ml-5 flex-1">
-          <Text className="font-bold text-xs" style={{ color: "#9C9C9D" }}>This Month</Text>
-          <Text
-            className="font-bold mt-1.5"
-            style={{ fontSize: 28, lineHeight: 32, color: "#F4F4F6" }}
-          >
-            {Math.round(monthRate * 100)}%
-          </Text>
-          <Text className="font-bold mt-1" style={{ fontSize: 11, color: "#6A6B6C" }}>
-            30-day completion rate
+      <View className="mb-4 rounded-2xl border border-border-hairline bg-bg-surface p-4">
+        <View className="flex-row items-center mb-3">
+          <RNText>
+            <Text className="font-bold" style={{ fontSize: 13, color: "#9C9C9D" }}>
+              This Month
+            </Text>
+            <Text className="font-bold ml-2" style={{ fontSize: 10, color: "#6A6B6C" }}>
+              {"  "}
+              {(() => {
+                const today = new Date();
+                const first = new Date(today.getFullYear(), today.getMonth(), 1);
+                return `${first.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${today.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+              })()}
+            </Text>
+          </RNText>
+        </View>
+        <View className="items-center">
+          <MonthProgressRing rate={monthData.rate} />
+          <Text className="font-bold mt-3" style={{ fontSize: 11, color: "#6A6B6C" }}>
+            {monthData.completed} / {monthData.scheduled} tasks completed
           </Text>
         </View>
       </View>

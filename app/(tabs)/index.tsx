@@ -12,7 +12,7 @@ import { Hexagon } from "lucide-react-native";
 
 export default function Index() {
   const insets = useSafeAreaInsets();
-  const { sortedHabits, handleToggle } = useHabits();
+  const { priorityHabits, handleToggle } = useHabits();
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
   const habits = useHabitStore((state) => state.habits);
   const logs = useHabitStore((state) => state.logs);
@@ -31,7 +31,7 @@ export default function Index() {
           paddingHorizontal: 16 
         }}
       >
-        <View className="mb-6 items-center mt-2">
+        <View className="mb-4 items-center mt-2">
           <Text className="text-heading-xl text-text-primary font-bold">Today</Text>
           <Text className="text-body-sm text-text-muted mt-1">
             {new Date().toLocaleDateString("en-US", {
@@ -51,12 +51,12 @@ export default function Index() {
 
         <View className="mb-6">
           <Text className="text-body-sm font-semibold text-text-ash uppercase tracking-wider mb-3">
-            ToDo
+            Priorities
           </Text>
           
           <View className="rounded-2xl border border-border-hairline overflow-hidden">
-            {sortedHabits.length > 0 ? (
-              sortedHabits.map((habit) => (
+            {priorityHabits.length > 0 ? (
+              priorityHabits.map((habit) => (
                 <HabitRow
                   key={habit.id}
                   habit={habit}

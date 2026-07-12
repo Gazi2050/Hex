@@ -5,7 +5,7 @@ import Animated, {
   useSharedValue,
   useAnimatedProps,
   withDelay,
-  withSpring,
+  withTiming,
 } from "react-native-reanimated";
 import { Text } from "@/components/ui/text";
 
@@ -15,7 +15,7 @@ interface MonthProgressRingProps {
   rate: number;
 }
 
-const SIZE = 120;
+const SIZE = 130;
 const STROKE_WIDTH = 10;
 const RADIUS = (SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -33,7 +33,7 @@ export function MonthProgressRing({ rate }: MonthProgressRingProps) {
   useEffect(() => {
     progress.value = withDelay(
       300,
-      withSpring(clampedRate, { damping: 24, stiffness: 120 })
+      withTiming(clampedRate, { duration: 600 })
     );
   }, [clampedRate, progress]);
 
@@ -67,16 +67,36 @@ export function MonthProgressRing({ rate }: MonthProgressRingProps) {
         />
       </Svg>
 
-      <View className="absolute inset-0 items-center justify-center pb-1">
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <Text
-          className="font-black text-center"
-          style={{ fontSize: 32, lineHeight: 32, color: "#F4F4F6" }}
+          style={{
+            fontSize: 32,
+            lineHeight: 32,
+            color: "#F4F4F6",
+            fontWeight: "900",
+            textAlign: "center",
+          }}
         >
           {pct}%
         </Text>
         <Text
-          className="font-bold text-center mt-1"
-          style={{ fontSize: 8, color: "#6A6B6C" }}
+          style={{
+            fontSize: 8,
+            color: "#6A6B6C",
+            fontWeight: "700",
+            marginTop: 2,
+            textAlign: "center",
+          }}
         >
           monthly
         </Text>
