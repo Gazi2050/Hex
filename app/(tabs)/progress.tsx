@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ScrollView, View, useWindowDimensions } from "react-native";
+import { ScrollView, View, useWindowDimensions, Text as RNText } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "@/components/ui/text";
 import { useHabitStore } from "@/lib/store";
@@ -29,15 +29,6 @@ export default function ProgressScreen() {
   const yearlyTrend = useMemo(() => calculateYearlyTrend(logs), [logs]);
   const totals = useMemo(() => calculateTotals(habits, logs), [habits, logs]);
 
-  type StatItem = { icon: typeof Flame; label: string; value: string };
-
-  const statItems: StatItem[] = [
-    { icon: Flame, label: "Current", value: `${stats.streak} days` },
-    { icon: Trophy, label: "Longest", value: `${stats.bestStreak} days` },
-    { icon: CheckCircle2, label: "Completed", value: `${totals.totalCompleted}` },
-    { icon: XCircle, label: "Missed", value: `${totals.totalMissed}` },
-  ];
-
   return (
     <ScrollView
       className="flex-1 bg-bg-canvas"
@@ -55,47 +46,65 @@ export default function ProgressScreen() {
         </Text>
       </View>
 
-      {/* Compact stats row — single card, 2×2 grid inside */}
-      <View className="mb-4 rounded-2xl border border-border-hairline bg-bg-surface p-4">
-        <View className="gap-4">
-          <View className="flex-row gap-4">
-            {statItems.slice(0, 2).map((item, i) => (
-              <View key={i} className="flex-1">
-                <View className="flex-row items-center gap-1.5 mb-1.5">
-                  <item.icon size={13} color="#FFFFFF" strokeWidth={2.5} />
-                  <Text className="font-bold" style={{ fontSize: 10, color: "#6A6B6C" }}>
-                    {item.label}
-                  </Text>
-                </View>
-                <Text className="text-heading-sm font-bold" style={{ color: "#F4F4F6" }}>
-                  {item.value}
-                </Text>
-              </View>
-            ))}
-          </View>
-          <View className="flex-row gap-4">
-            {statItems.slice(2, 4).map((item, i) => (
-              <View key={i} className="flex-1">
-                <View className="flex-row items-center gap-1.5 mb-1.5">
-                  <item.icon size={13} color="#FFFFFF" strokeWidth={2.5} />
-                  <Text className="font-bold" style={{ fontSize: 10, color: "#6A6B6C" }}>
-                    {item.label}
-                  </Text>
-                </View>
-                <Text className="text-heading-sm font-bold" style={{ color: "#F4F4F6" }}>
-                  {item.value}
-                </Text>
-              </View>
-            ))}
-          </View>
+      {/* Stats row — 2×2 grid of individual cards */}
+      <View className="mb-4 gap-3">
+        <View className="flex-row gap-3">
+          {[
+            { icon: Flame, label: "Current", value: `${stats.streak} days` },
+            { icon: Trophy, label: "Longest", value: `${stats.bestStreak} days` },
+          ].map((item, i) => (
+            <View
+              key={i}
+              className="flex-1 rounded-2xl border border-border-hairline bg-bg-surface p-4 items-center"
+            >
+              <item.icon size={18} color="#FFFFFF" strokeWidth={2.5} />
+              <Text className="font-bold mt-2" style={{ fontSize: 10, color: "#6A6B6C" }}>
+                {item.label}
+              </Text>
+              <Text className="text-heading-sm font-bold mt-1" style={{ color: "#F4F4F6" }}>
+                {item.value}
+              </Text>
+            </View>
+          ))}
+        </View>
+        <View className="flex-row gap-3">
+          {[
+            { icon: CheckCircle2, label: "Completed", value: `${totals.totalCompleted}` },
+            { icon: XCircle, label: "Missed", value: `${totals.totalMissed}` },
+          ].map((item, i) => (
+            <View
+              key={i}
+              className="flex-1 rounded-2xl border border-border-hairline bg-bg-surface p-4 items-center"
+            >
+              <item.icon size={18} color="#FFFFFF" strokeWidth={2.5} />
+              <Text className="font-bold mt-2" style={{ fontSize: 10, color: "#6A6B6C" }}>
+                {item.label}
+              </Text>
+              <Text className="text-heading-sm font-bold mt-1" style={{ color: "#F4F4F6" }}>
+                {item.value}
+              </Text>
+            </View>
+          ))}
         </View>
       </View>
 
       {/* Weekly bar chart */}
       <View className="mb-4 rounded-2xl border border-border-hairline bg-bg-surface p-4">
-        <Text className="font-bold mb-3" style={{ fontSize: 13, color: "#9C9C9D" }}>
-          This Week
-        </Text>
+        <View className="flex-row items-center mb-3">
+          <RNText>
+            <Text className="font-bold" style={{ fontSize: 13, color: "#9C9C9D" }}>
+              This Week
+            </Text>
+            {weekBars.length > 0 && (
+              <Text className="font-bold ml-2" style={{ fontSize: 10, color: "#6A6B6C" }}>
+                {"  "}
+                {new Date(weekBars[0].date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                {" – "}
+                {new Date(weekBars[weekBars.length - 1].date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              </Text>
+            )}
+          </RNText>
+        </View>
         <WeeklyBarChart data={weekBars} />
       </View>
 

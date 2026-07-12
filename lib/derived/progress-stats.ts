@@ -14,10 +14,17 @@ export function calculateWeeklyBars(
   const result: { day: string; date: string; pct: number; completed: number; scheduled: number }[] = [];
   const logSet = new Set(logs.map((l) => `${l.habitId}|${l.date}`));
 
-  for (let i = 6; i >= 0; i--) {
-    const d = dateNDaysAgo(i);
+  const today = new Date();
+  const daysSinceSunday = today.getDay(); // 0=Sun
+  const sunday = new Date(today);
+  sunday.setDate(today.getDate() - daysSinceSunday);
+  sunday.setHours(0, 0, 0, 0);
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(sunday);
+    d.setDate(sunday.getDate() + i);
     const dateStr = getLocalDateString(d);
-    const dayOfWeek = (d.getDay() + 6) % 7;
+    const dayOfWeek = (d.getDay() + 6) % 7; // 0=Mon, 1=Tue, ..., 6=Sun
 
     const scheduled = habits.filter(
       (h) => h.repeatDays[dayOfWeek] && h.createdAt.slice(0, 10) <= dateStr
@@ -27,7 +34,7 @@ export function calculateWeeklyBars(
     ).length;
 
     result.push({
-      day: d.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 1),
+      day: d.toLocaleDateString("en-US", { weekday: "short" }),
       date: dateStr,
       pct: scheduled.length > 0 ? completed / scheduled.length : 0,
       completed,

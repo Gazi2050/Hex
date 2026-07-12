@@ -16,20 +16,15 @@ interface WeeklyBarChartProps {
   }[];
 }
 
-const BAR_HEIGHT = 46;
-const MIN_BAR_HEIGHT = 16;
-const BAR_RADIUS = 3;
+const BAR_HEIGHT = 62;
+const MIN_BAR_HEIGHT = 20;
+const BAR_FILL = "#59D499";
+const BAR_ZERO = "#1c1c1e";
+const BAR_RADIUS = 4;
 const LABEL_COLOR = "#6A6B6C";
+const ZERO_TEXT_COLOR = "#9C9C9D";
 
 const AnimatedView = Animated.View;
-
-function getBarColor(pct: number): string {
-  if (pct === 0) return "#1c1c1e";
-  if (pct < 0.25) return "#0e4429";
-  if (pct < 0.5) return "#006d32";
-  if (pct < 0.75) return "#26a641";
-  return "#2fa84b";
-}
 
 function Bar({
   pct,
@@ -44,7 +39,7 @@ function Bar({
     pct > 0
       ? Math.max(pct * BAR_HEIGHT, MIN_BAR_HEIGHT)
       : MIN_BAR_HEIGHT;
-  const color = getBarColor(pct);
+  const backgroundColor = pct > 0 ? BAR_FILL : BAR_ZERO;
   const label = Math.round(pct * 100);
 
   const sv = useSharedValue(0);
@@ -66,6 +61,7 @@ function Bar({
       <View
         style={{
           width: "100%",
+          height: BAR_HEIGHT,
           justifyContent: "flex-end",
           alignItems: "center",
         }}
@@ -74,26 +70,26 @@ function Bar({
           style={[
             {
               width: "100%",
-              backgroundColor: color,
-              borderTopLeftRadius: BAR_RADIUS,
-              borderTopRightRadius: BAR_RADIUS,
+              backgroundColor,
+              borderRadius: BAR_RADIUS,
               overflow: "hidden",
             },
             animatedStyle,
           ]}
-        >
-          <Text
-            className="font-bold text-center"
-            style={{
-              fontSize: 10,
-              color: pct > 0 ? "#FAEBD7" : "#6A6B6C",
-              marginTop: 2,
-            }}
-          >
-            {label}%
-          </Text>
-        </AnimatedView>
+        />
       </View>
+      <Text
+        className="font-bold text-center absolute"
+        style={{
+          fontSize: 10,
+          color: pct > 0 ? "#000000" : ZERO_TEXT_COLOR,
+          bottom: 0,
+          left: 0,
+          right: 0,
+        }}
+      >
+        {label}%
+      </Text>
     </View>
   );
 }
@@ -109,14 +105,14 @@ export function WeeklyBarChart({ data }: WeeklyBarChartProps) {
   return (
     <View className="gap-1.5">
       {/* Bars — flex-row, bottom-aligned */}
-      <View className="flex-row items-end justify-between gap-1" style={{ height: BAR_HEIGHT }}>
+      <View className="flex-row items-end justify-between gap-2" style={{ height: BAR_HEIGHT }}>
         {data.map((d, i) => (
           <Bar key={i} pct={d.pct} index={i} show={showBars} />
         ))}
       </View>
 
       {/* Day labels */}
-      <View className="flex-row justify-between gap-1">
+      <View className="flex-row justify-between gap-2">
         {data.map((d, i) => (
           <View key={i} className="flex-1 items-center">
             <Text className="font-bold" style={{ fontSize: 10, color: LABEL_COLOR }}>
