@@ -5,13 +5,12 @@ import Animated, {
   useAnimatedStyle,
   withDelay,
   withTiming,
-  withSpring,
 } from "react-native-reanimated";
 import Svg, { Path, Defs, LinearGradient, Stop } from "react-native-svg";
 import { Text } from "@/components/ui/text";
 
 interface YearlyAreaChartProps {
-  data: { month: string; count: number }[];
+  data: { month: string; completed: number }[];
   width: number;
 }
 
@@ -23,17 +22,20 @@ const AnimatedView = Animated.View;
 
 export function YearlyAreaChart({ data, width }: YearlyAreaChartProps) {
   const chartWidth = width;
-  const totalHeight = CHART_HEIGHT + 20;
+  const totalHeight = CHART_HEIGHT + 10;
 
   const { linePath, areaPath } = useMemo(() => {
     if (data.length === 0) return { linePath: "", areaPath: "" };
 
-    const maxVal = Math.max(...data.map((d) => d.count), 1);
-    const stepX = chartWidth / (data.length - 1);
+    const maxVal = Math.max(...data.map((d) => d.completed), 1);
+    const colW = chartWidth / data.length;
+    const startX = colW / 2;
+    const endX = chartWidth - colW / 2;
+    const stepX = (endX - startX) / (data.length - 1);
 
     const points = data.map((d, i) => ({
-      x: i * stepX,
-      y: CHART_HEIGHT - (d.count / maxVal) * (CHART_HEIGHT - 10) - 5,
+      x: startX + i * stepX,
+      y: CHART_HEIGHT - (d.completed / maxVal) * (CHART_HEIGHT - 10) - 5,
     }));
 
     if (points.length < 2) return { linePath: "", areaPath: "" };
@@ -65,7 +67,7 @@ export function YearlyAreaChart({ data, width }: YearlyAreaChartProps) {
 
   useEffect(() => {
     opacity.value = withDelay(200, withTiming(1, { duration: 600 }));
-    translateY.value = withDelay(200, withSpring(0, { damping: 20 }));
+    translateY.value = withDelay(200, withTiming(0, { duration: 600 }));
   }, [opacity, translateY]);
 
   const animStyle = useAnimatedStyle(() => ({
@@ -77,7 +79,7 @@ export function YearlyAreaChart({ data, width }: YearlyAreaChartProps) {
 
   return (
     <AnimatedView style={[animStyle, { width: chartWidth, height: totalHeight }]}>
-      <Svg width={chartWidth} height={totalHeight} viewBox={`0 0 ${chartWidth} ${totalHeight}`}>
+      <Svg width={chartWidth} height={CHART_HEIGHT} viewBox={`0 0 ${chartWidth} ${CHART_HEIGHT}`}>
         <Defs>
           <LinearGradient id="yearFill" x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor={STROKE_COLOR} stopOpacity={0.25} />

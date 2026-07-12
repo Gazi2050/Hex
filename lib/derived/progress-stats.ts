@@ -26,19 +26,22 @@ export function calculateWeeklyBars(
     const dateStr = getLocalDateString(d);
     const dayOfWeek = (d.getDay() + 6) % 7; // 0=Mon, 1=Tue, ..., 6=Sun
 
-    const scheduled = habits.filter(
-      (h) => h.repeatDays[dayOfWeek] && h.createdAt.slice(0, 10) <= dateStr
-    );
-    const completed = scheduled.filter((h) =>
-      logSet.has(`${h.id}|${dateStr}`)
-    ).length;
+    let scheduled = 0;
+    let completed = 0;
+
+    for (const h of habits) {
+      if (h.repeatDays[dayOfWeek] && h.createdAt.slice(0, 10) <= dateStr) {
+        scheduled += h.frequency;
+        if (logSet.has(`${h.id}|${dateStr}`)) completed += 1;
+      }
+    }
 
     result.push({
       day: d.toLocaleDateString("en-US", { weekday: "short" }),
       date: dateStr,
-      pct: scheduled.length > 0 ? completed / scheduled.length : 0,
+      pct: scheduled > 0 ? completed / scheduled : 0,
       completed,
-      scheduled: scheduled.length,
+      scheduled,
     });
   }
 
@@ -62,13 +65,12 @@ export function calculateMonthRate(
     const dateStr = getLocalDateString(new Date(d));
     const dayOfWeek = (d.getDay() + 6) % 7;
 
-    const scheduled = habits.filter(
-      (h) => h.repeatDays[dayOfWeek] && h.createdAt.slice(0, 10) <= dateStr
-    );
-    totalScheduled += scheduled.length;
-    totalCompleted += scheduled.filter((h) =>
-      logSet.has(`${h.id}|${dateStr}`)
-    ).length;
+    for (const h of habits) {
+      if (h.repeatDays[dayOfWeek] && h.createdAt.slice(0, 10) <= dateStr) {
+        totalScheduled += h.frequency;
+        if (logSet.has(`${h.id}|${dateStr}`)) totalCompleted += 1;
+      }
+    }
   }
 
   return {
@@ -101,38 +103,59 @@ export function calculateTotals(
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
     const dateStr = getLocalDateString(d);
     const dayOfWeek = (d.getDay() + 6) % 7;
-    const scheduled = habits.filter(
-      (h) => h.repeatDays[dayOfWeek] && h.createdAt.slice(0, 10) <= dateStr
-    );
-    totalMissed += scheduled.filter(
-      (h) => !logSet.has(`${h.id}|${dateStr}`)
-    ).length;
+
+    for (const h of habits) {
+      if (h.repeatDays[dayOfWeek] && h.createdAt.slice(0, 10) <= dateStr) {
+        totalMissed += h.frequency;
+        if (logSet.has(`${h.id}|${dateStr}`)) totalMissed -= 1;
+      }
+    }
   }
 
   return { totalCompleted, totalMissed };
 }
 
 export function calculateYearlyTrend(
+  habits: Habit[],
   logs: HabitLog[]
-): { month: string; count: number }[] {
-  const result: { month: string; count: number }[] = [];
+): { months: { month: string; completed: number; scheduled: number }[]; totalCompleted: number; totalScheduled: number } {
+  const logSet = new Set(logs.map((l) => `${l.habitId}|${l.date}`));
   const now = new Date();
+  const year = now.getFullYear();
 
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const year = d.getFullYear();
-    const month = d.getMonth();
+  let totalCompleted = 0;
+  let totalScheduled = 0;
+  const months: { month: string; completed: number; scheduled: number }[] = [];
 
-    const count = logs.filter((l) => {
-      const [ly, lm] = l.date.split("-").map(Number);
-      return ly === year && lm - 1 === month;
-    }).length;
+  for (let m = 0; m < 12; m++) {
+    let monthCompleted = 0;
+    let monthScheduled = 0;
 
-    result.push({
-      month: d.toLocaleDateString("en-US", { month: "short" }),
-      count,
+    const daysInMonth = new Date(year, m + 1, 0).getDate();
+    const stopDay = m === now.getMonth() ? now.getDate() : daysInMonth;
+
+    for (let day = 1; day <= stopDay; day++) {
+      const d = new Date(year, m, day);
+      const dateStr = getLocalDateString(d);
+      const dayOfWeek = (d.getDay() + 6) % 7;
+
+      for (const h of habits) {
+        if (h.repeatDays[dayOfWeek] && h.createdAt.slice(0, 10) <= dateStr) {
+          monthScheduled += h.frequency;
+          if (logSet.has(`${h.id}|${dateStr}`)) monthCompleted += 1;
+        }
+      }
+    }
+
+    months.push({
+      month: new Date(year, m, 1).toLocaleDateString("en-US", { month: "short" }),
+      completed: monthCompleted,
+      scheduled: monthScheduled,
     });
+
+    totalCompleted += monthCompleted;
+    totalScheduled += monthScheduled;
   }
 
-  return result;
+  return { months, totalCompleted, totalScheduled };
 }

@@ -37,7 +37,7 @@ const ACTIVE_ICON_COLOR = "#000000";
 
 const PLUS_SIZE       = 56;
 const PLUS_COLOR      = "#59D499"; // accent token — DESIGN.md:41
-const PLUS_ICON_COLOR = "#FFFFFF";
+const PLUS_ICON_COLOR = "#000000";
 
 // ─── Tab Toast ────────────────────────────────────────────────────────────────
 
