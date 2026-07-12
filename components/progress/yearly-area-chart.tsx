@@ -10,7 +10,7 @@ import Svg, { Path, Defs, LinearGradient, Stop } from "react-native-svg";
 import { Text } from "@/components/ui/text";
 
 interface YearlyAreaChartProps {
-  data: { month: string; completed: number }[];
+  data: { month: string; rate: number | null }[];
   width: number;
 }
 
@@ -27,7 +27,7 @@ export function YearlyAreaChart({ data, width }: YearlyAreaChartProps) {
   const { linePath, areaPath } = useMemo(() => {
     if (data.length === 0) return { linePath: "", areaPath: "" };
 
-    const maxVal = Math.max(...data.map((d) => d.completed), 1);
+    const maxVal = Math.max(...data.map((d) => d.rate ?? 0), 0.01);
     const colW = chartWidth / data.length;
     const startX = colW / 2;
     const endX = chartWidth - colW / 2;
@@ -35,7 +35,7 @@ export function YearlyAreaChart({ data, width }: YearlyAreaChartProps) {
 
     const points = data.map((d, i) => ({
       x: startX + i * stepX,
-      y: CHART_HEIGHT - (d.completed / maxVal) * (CHART_HEIGHT - 10) - 5,
+      y: CHART_HEIGHT - ((d.rate ?? 0) / maxVal) * (CHART_HEIGHT - 10) - 5,
     }));
 
     if (points.length < 2) return { linePath: "", areaPath: "" };

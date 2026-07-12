@@ -29,10 +29,12 @@ export default function ProgressScreen() {
   const yearlyData = useMemo(() => calculateYearlyTrend(habits, logs), [habits, logs]);
   const totals = useMemo(() => calculateTotals(habits, logs), [habits, logs]);
 
-  const weekTotals = useMemo(() => {
-    const c = weekBars.reduce((s, d) => s + d.completed, 0);
-    const sched = weekBars.reduce((s, d) => s + d.scheduled, 0);
-    return { completed: c, scheduled: sched };
+  const weekValidDays = useMemo(() => weekBars.filter((d) => d.hasData).length, [weekBars]);
+  const weekAvg = useMemo(() => {
+    const valid = weekBars.filter((d) => d.hasData);
+    return valid.length > 0
+      ? valid.reduce((s, d) => s + d.pct, 0) / valid.length
+      : null;
   }, [weekBars]);
 
   return (
@@ -113,7 +115,9 @@ export default function ProgressScreen() {
         </View>
         <WeeklyBarChart data={weekBars} />
         <Text className="font-bold mt-4 text-center" style={{ fontSize: 11, color: "#6A6B6C" }}>
-          {weekTotals.completed} completed · {weekTotals.scheduled - weekTotals.completed} missed this week
+          {weekAvg !== null
+            ? `${Math.round(weekAvg * 100)}% avg across ${weekValidDays} day${weekValidDays !== 1 ? "s" : ""}`
+            : "No data this week"}
         </Text>
       </View>
 
@@ -137,7 +141,9 @@ export default function ProgressScreen() {
         <View className="items-center">
           <MonthProgressRing rate={monthData.rate} />
           <Text className="font-bold mt-4" style={{ fontSize: 11, color: "#6A6B6C" }}>
-            {monthData.completed} completed · {monthData.scheduled - monthData.completed} missed this month
+            {monthData.rate !== null
+              ? `${Math.round(monthData.rate * 100)}% avg across ${monthData.validDays} day${monthData.validDays !== 1 ? "s" : ""}`
+              : "No data this month"}
           </Text>
         </View>
       </View>
@@ -157,9 +163,11 @@ export default function ProgressScreen() {
             )}
           </RNText>
         </View>
-        <YearlyAreaChart data={yearlyData.months.map((m) => ({ month: m.month, completed: m.completed }))} width={chartWidth - 32} />
+        <YearlyAreaChart data={yearlyData.months.map((m) => ({ month: m.month, rate: m.rate }))} width={chartWidth - 32} />
         <Text className="font-bold mt-5 text-center" style={{ fontSize: 11, color: "#6A6B6C" }}>
-          {yearlyData.totalCompleted} completed · {yearlyData.totalScheduled - yearlyData.totalCompleted} missed this year
+          {yearlyData.rate !== null
+            ? `${Math.round(yearlyData.rate * 100)}% avg across ${yearlyData.totalCompleted + yearlyData.totalScheduled} tasks`
+            : "No data this year"}
         </Text>
       </View>
     </ScrollView>

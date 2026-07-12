@@ -12,7 +12,7 @@ import { Text } from "@/components/ui/text";
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 interface MonthProgressRingProps {
-  rate: number;
+  rate: number | null;
 }
 
 const SIZE = 130;
@@ -23,7 +23,9 @@ const TRACK_COLOR = "#1c1c1e";
 const FILL_COLOR = "#59D499";
 
 export function MonthProgressRing({ rate }: MonthProgressRingProps) {
-  const clampedRate = Math.min(1, Math.max(0, rate));
+  const effectiveRate = rate ?? 0;
+  const clampedRate = Math.min(1, Math.max(0, effectiveRate));
+  const hasData = rate !== null;
   const progress = useSharedValue(0);
 
   const animatedProps = useAnimatedProps(() => ({
@@ -82,12 +84,12 @@ export function MonthProgressRing({ rate }: MonthProgressRingProps) {
           style={{
             fontSize: 32,
             lineHeight: 32,
-            color: "#F4F4F6",
+            color: hasData ? "#F4F4F6" : "#6A6B6C",
             fontWeight: "900",
             textAlign: "center",
           }}
         >
-          {pct}%
+          {hasData ? `${pct}%` : "—"}
         </Text>
         <Text
           style={{

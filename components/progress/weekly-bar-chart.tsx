@@ -13,6 +13,7 @@ interface WeeklyBarChartProps {
     pct: number;
     completed: number;
     scheduled: number;
+    hasData: boolean;
   }[];
 }
 
