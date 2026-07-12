@@ -14,9 +14,10 @@ type CompletionToggleProps = {
   completed: boolean;
   onToggle: () => void;
   className?: string;
+  size?: number;
 };
 
-function CompletionToggle({ completed, onToggle, className }: CompletionToggleProps) {
+function CompletionToggle({ completed, onToggle, className, size = 24 }: CompletionToggleProps) {
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -40,7 +41,7 @@ function CompletionToggle({ completed, onToggle, className }: CompletionTogglePr
   };
 
   return (
-    <Pressable onPress={handlePress} className={cn("h-6 w-6", className)}>
+    <Pressable onPress={handlePress} style={{ width: size, height: size }} className={className}>
       <Animated.View
         className={cn(
           "h-full w-full items-center justify-center rounded-full border",
@@ -51,7 +52,7 @@ function CompletionToggle({ completed, onToggle, className }: CompletionTogglePr
         style={animatedStyle}
       >
         {completed && (
-          <Icon as={Check} size={14} className="text-text-inverse" />
+          <Icon as={Check} size={Math.round(size * 0.6)} className="text-text-inverse" />
         )}
       </Animated.View>
     </Pressable>

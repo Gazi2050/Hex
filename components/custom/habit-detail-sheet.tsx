@@ -6,6 +6,8 @@ import { calculateCurrentStreak, calculateBestStreak } from "@/lib/derived/stats
 import { Text } from "@/components/ui/text";
 import { Flame, Trophy, Pencil } from "lucide-react-native";
 import { MiniCubeHeatmap } from "@/components/custom/mini-cube-heatmap";
+import { HabitIcon } from "@/components/custom/habit-icon";
+import { HabitTypeBadge } from "@/components/custom/habit-type-badge";
 
 interface HabitDetailSheetProps {
   habitId: string | null;
@@ -54,22 +56,28 @@ export function HabitDetailSheet({ habitId, onClose }: HabitDetailSheetProps) {
                   style={{ backgroundColor: `${habit.color}15`, borderColor: habit.color }}
                   className="w-12 h-12 rounded-full border-2 items-center justify-center mr-3"
                 >
-                  <Text style={{ color: habit.color }} className="text-body-lg font-bold">
-                    {habit.iconName.charAt(0)}
-                  </Text>
+                  <HabitIcon
+                    name={habit.iconName}
+                    size={24}
+                    color={habit.color}
+                    strokeWidth={2.5}
+                  />
                 </View>
                 <View className="flex-1">
                   <Text className="text-body-lg font-semibold text-text-primary">{habit.name}</Text>
-                  <View
-                    style={{ backgroundColor: habit.color }}
-                    className="self-start mt-1.5 px-2 py-0.5 rounded-md"
-                  >
-                    <Text
-                      style={{ color: "#000000" }}
-                      className="text-caption-sm font-bold"
+                  <View className="self-start flex-row items-center gap-2 mt-1.5">
+                    <View
+                      style={{ backgroundColor: habit.color }}
+                      className="px-2 py-0.5 rounded-md"
                     >
-                      {habit.frequency}×
-                    </Text>
+                      <Text
+                        style={{ color: "#000000" }}
+                        className="text-caption-sm font-bold"
+                      >
+                        {habit.frequency}×
+                      </Text>
+                    </View>
+                    <HabitTypeBadge repeatDays={habit.repeatDays} color={habit.color} />
                   </View>
                 </View>
               </View>

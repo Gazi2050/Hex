@@ -1,5 +1,7 @@
 import { CompletionToggle } from "@/components/custom/completion-toggle";
 import { StreakBadge } from "@/components/custom/streak-badge";
+import { HabitIcon } from "@/components/custom/habit-icon";
+import { HabitTypeBadge } from "@/components/custom/habit-type-badge";
 import { Text } from "@/components/ui/text";
 import type { Habit } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -23,11 +25,17 @@ function HabitRow({ habit, onToggle, onPress, className }: HabitRowProps) {
         className
       )}
     >
-      <CompletionToggle
-        completed={habit.completedToday}
-        onToggle={() => onToggle(habit.id)}
-        className="mr-3"
-      />
+      <View
+        style={{ backgroundColor: `${habit.color}15` }}
+        className="w-10 h-10 rounded-full items-center justify-center mr-3"
+      >
+        <HabitIcon
+          name={habit.iconName}
+          size={24}
+          color={habit.color}
+          strokeWidth={2.5}
+        />
+      </View>
       <View className="flex-1">
         <Text
           className={cn(
@@ -38,6 +46,7 @@ function HabitRow({ habit, onToggle, onPress, className }: HabitRowProps) {
           {habit.name}
         </Text>
         <View className="flex-row items-center gap-2 mt-1">
+          <HabitTypeBadge repeatDays={habit.repeatDays} color={habit.color} />
           <View
             style={{ backgroundColor: habit.color }}
             className="px-2 py-0.5 rounded-md"
@@ -65,6 +74,12 @@ function HabitRow({ habit, onToggle, onPress, className }: HabitRowProps) {
         </View>
       </View>
       <StreakBadge streak={habit.streak} />
+      <CompletionToggle
+        completed={habit.completedToday}
+        onToggle={() => onToggle(habit.id)}
+        size={32}
+        className="ml-3"
+      />
     </Pressable>
   );
 }

@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "@/components/ui/text";
-import type { LucideIcon } from "lucide-react-native";
 import {
   Plus,
   Minus,
@@ -20,67 +19,8 @@ import {
   Infinity,
   CheckSquare,
   Hexagon,
-  Droplets,
-  BookOpen,
-  Dumbbell,
-  Moon,
-  Flame,
-  Brain,
-  Heart,
-  Music,
-  Coffee,
-  Bike,
-  Apple,
-  Pencil,
-  Activity,
-  Award,
-  Bath,
-  BedDouble,
-  Bell,
-  Briefcase,
-  Brush,
-  Calculator,
-  Calendar,
-  Camera,
-  Car,
-  Clock,
-  Coins,
-  Compass,
-  CreditCard,
-  FileText,
-  Footprints,
-  Gamepad2,
-  GlassWater,
-  GraduationCap,
-  Hammer,
-  Key,
-  Laptop,
-  Leaf,
-  Library,
-  ListTodo,
-  Mail,
-  Monitor,
-  Notebook,
-  Palette,
-  Paperclip,
-  Phone,
-  Pill,
-  PiggyBank,
-  Salad,
-  Scale,
-  Shield,
-  ShoppingBag,
-  Smile,
-  Sparkles,
-  Stethoscope,
-  Sun,
-  Target,
-  Trophy,
-  Tv,
-  Utensils,
-  Wallet,
-  Wrench,
 } from "lucide-react-native";
+import { HABIT_ICONS, HABIT_ICON_NAMES } from "@/lib/habit-icons";
 
 export type HabitFormValues = {
   name: string;
@@ -113,72 +53,6 @@ function parseTimeString(
   if (isNaN(m) || m < 0 || m > 59) return { hour: 8, minute: 0, isPm: false };
   return { hour: h, minute: m, isPm };
 }
-
-const BUILT_IN_ICONS: { name: string; component: LucideIcon }[] = [
-  { name: "Hexagon", component: Hexagon },
-  { name: "Droplets", component: Droplets },
-  { name: "BookOpen", component: BookOpen },
-  { name: "Dumbbell", component: Dumbbell },
-  { name: "Moon", component: Moon },
-  { name: "Flame", component: Flame },
-  { name: "Brain", component: Brain },
-  { name: "Heart", component: Heart },
-  { name: "Music", component: Music },
-  { name: "Coffee", component: Coffee },
-  { name: "Bike", component: Bike },
-  { name: "Apple", component: Apple },
-  { name: "Pencil", component: Pencil },
-  { name: "Activity", component: Activity },
-  { name: "Award", component: Award },
-  { name: "Bath", component: Bath },
-  { name: "BedDouble", component: BedDouble },
-  { name: "Bell", component: Bell },
-  { name: "Briefcase", component: Briefcase },
-  { name: "Brush", component: Brush },
-  { name: "Calculator", component: Calculator },
-  { name: "Calendar", component: Calendar },
-  { name: "Camera", component: Camera },
-  { name: "Car", component: Car },
-  { name: "CheckSquare", component: CheckSquare },
-  { name: "Clock", component: Clock },
-  { name: "Coins", component: Coins },
-  { name: "Compass", component: Compass },
-  { name: "CreditCard", component: CreditCard },
-  { name: "FileText", component: FileText },
-  { name: "Footprints", component: Footprints },
-  { name: "Gamepad2", component: Gamepad2 },
-  { name: "GlassWater", component: GlassWater },
-  { name: "GraduationCap", component: GraduationCap },
-  { name: "Hammer", component: Hammer },
-  { name: "Infinity", component: Infinity },
-  { name: "Key", component: Key },
-  { name: "Laptop", component: Laptop },
-  { name: "Leaf", component: Leaf },
-  { name: "Library", component: Library },
-  { name: "ListTodo", component: ListTodo },
-  { name: "Mail", component: Mail },
-  { name: "Monitor", component: Monitor },
-  { name: "Notebook", component: Notebook },
-  { name: "Palette", component: Palette },
-  { name: "Paperclip", component: Paperclip },
-  { name: "Phone", component: Phone },
-  { name: "Pill", component: Pill },
-  { name: "PiggyBank", component: PiggyBank },
-  { name: "Salad", component: Salad },
-  { name: "Scale", component: Scale },
-  { name: "Shield", component: Shield },
-  { name: "ShoppingBag", component: ShoppingBag },
-  { name: "Smile", component: Smile },
-  { name: "Sparkles", component: Sparkles },
-  { name: "Stethoscope", component: Stethoscope },
-  { name: "Sun", component: Sun },
-  { name: "Target", component: Target },
-  { name: "Trophy", component: Trophy },
-  { name: "Tv", component: Tv },
-  { name: "Utensils", component: Utensils },
-  { name: "Wallet", component: Wallet },
-  { name: "Wrench", component: Wrench },
-];
 
 const PRESET_COLORS = [
   "#59D499",
@@ -297,9 +171,7 @@ export function HabitForm({
     });
   };
 
-  const SelectedIconComponent =
-    BUILT_IN_ICONS.find((i) => i.name === selectedIconName)?.component ??
-    Hexagon;
+  const SelectedIconComponent = HABIT_ICONS[selectedIconName] ?? Hexagon;
 
   return (
     <>
@@ -333,13 +205,13 @@ export function HabitForm({
             contentContainerStyle={{ paddingHorizontal: 4 }}
             className="w-full mt-2"
           >
-            {BUILT_IN_ICONS.map((item) => {
-              const IconItem = item.component;
-              const isSelected = selectedIconName === item.name;
+            {HABIT_ICON_NAMES.map((name) => {
+              const IconItem = HABIT_ICONS[name];
+              const isSelected = selectedIconName === name;
               return (
                 <Pressable
-                  key={item.name}
-                  onPress={() => setSelectedIconName(item.name)}
+                  key={name}
+                  onPress={() => setSelectedIconName(name)}
                   className="p-2.5 mx-1 rounded-xl bg-bg-surface border border-border-hairline active:scale-95"
                   style={{
                     borderColor: isSelected ? selectedColor : "#242728",
