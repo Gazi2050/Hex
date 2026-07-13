@@ -22,7 +22,7 @@ export default function HabitsScreen() {
           paddingHorizontal: 16,
         }}
       >
-        <View className="mb-6 mt-2">
+        <View className="mb-6 items-center mt-2">
           <Text className="text-heading-xl text-text-primary font-bold">Habits</Text>
           <Text className="text-body-sm text-text-muted mt-1">
             All your tracked habits

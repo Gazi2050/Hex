@@ -1,60 +1,22 @@
-import { Alert, ScrollView, View, Pressable } from "react-native";
+import { ScrollView, View } from "react-native";
 import { Text } from "@/components/ui/text";
-import { useHabitStore } from "@/lib/store";
 
 export default function SettingsScreen() {
-  const set = useHabitStore.setState;
-
-  const handleClearData = () => {
-    Alert.alert(
-      "Clear All Data",
-      "This will permanently delete all your habits and history. Continue?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Clear",
-          style: "destructive",
-          onPress: () => set({ habits: [], logs: [], achievements: [] }),
-        },
-      ]
-    );
-  };
-
   return (
     <ScrollView
       className="flex-1 bg-bg-canvas"
       contentContainerStyle={{ paddingBottom: 100, paddingTop: 64, paddingHorizontal: 16 }}
     >
-      <View className="mb-6">
-        <Text className="text-heading-xl text-text-primary">Settings</Text>
+      <View className="mb-6 items-center">
+        <Text className="text-heading-xl text-text-primary font-bold">Settings</Text>
         <Text className="text-body-sm text-text-muted mt-1">Manage your preferences</Text>
       </View>
 
-      <View className="mb-4 rounded-2xl border border-border-hairline bg-bg-surface p-4">
-        <Text className="text-body-lg font-semibold text-text-primary">Notifications</Text>
-        <Text className="text-body-sm text-text-muted mt-1">Daily reminders at 8:00 AM</Text>
-      </View>
-
-      <View className="mb-4 rounded-2xl border border-border-hairline bg-bg-surface p-4">
-        <Text className="text-body-lg font-semibold text-text-primary">Appearance</Text>
-        <Text className="text-body-sm text-text-muted mt-1">Dark mode • System font</Text>
-      </View>
-
-      <View className="mb-4 rounded-2xl border border-border-hairline bg-bg-surface p-4">
-        <Text className="text-body-lg font-semibold text-text-primary">Account</Text>
-        <Text className="text-body-sm text-text-muted mt-1">Manage your profile and data</Text>
-      </View>
-
-      <View className="mb-4 rounded-2xl border border-border-hairline bg-bg-surface p-4">
-        <Text className="text-body-lg font-semibold text-text-primary">Developer</Text>
-        <Pressable
-          onPress={handleClearData}
-          className="mt-3 rounded-xl border border-feedback-danger px-4 py-3 items-center"
-        >
-          <Text className="text-body-sm font-bold text-feedback-danger">
-            Clear All Data
-          </Text>
-        </Pressable>
+      <View className="rounded-2xl border border-border-hairline bg-bg-surface p-8 items-center justify-center">
+        <Text className="text-body-lg font-semibold text-text-primary mb-2">Coming Soon</Text>
+        <Text className="text-body-sm text-text-muted text-center">
+          Exciting new features are on the way. Stay tuned!
+        </Text>
       </View>
     </ScrollView>
   );

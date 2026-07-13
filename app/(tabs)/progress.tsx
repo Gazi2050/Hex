@@ -99,7 +99,7 @@ export default function ProgressScreen() {
     }
 
     return { months, rate: avgRate(allRates), totalCompleted, totalScheduled };
-  }, [habits, logs, yearOffset]);
+  }, [deferred, habits, logs, yearOffset]);
 
   // ── Weekly data (offset-aware) ──────────────────────────────────────────
   const weekBars = useMemo(() => {
@@ -127,7 +127,7 @@ export default function ProgressScreen() {
         hasData: dp.pct !== null && !isFuture,
       };
     });
-  }, [habits, logs, weekOffset]);
+  }, [deferred, habits, logs, weekOffset]);
 
   const weekValidDays = useMemo(
     () => weekBars.filter((d) => d.hasData).length,
@@ -176,7 +176,7 @@ export default function ProgressScreen() {
       firstDate: firstOfMonth,
       lastDate: new Date(base.getFullYear(), base.getMonth(), stopDay),
     };
-  }, [habits, logs, monthOffset]);
+  }, [deferred, habits, logs, monthOffset]);
 
   return (
     <ScrollView
