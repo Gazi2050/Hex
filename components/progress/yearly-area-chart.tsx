@@ -2,12 +2,13 @@ import { useEffect, useMemo } from "react";
 import { View } from "react-native";
 import Animated, {
   useSharedValue,
-  useAnimatedStyle,
-  withDelay,
+  useAnimatedProps,
   withTiming,
 } from "react-native-reanimated";
 import Svg, { Path, Defs, LinearGradient, Stop } from "react-native-svg";
 import { Text } from "@/components/ui/text";
+
+const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 interface YearlyAreaChartProps {
   data: { month: string; rate: number | null }[];
@@ -18,67 +19,98 @@ const STROKE_COLOR = "#59D499";
 const CHART_HEIGHT = 100;
 const LABEL_COLOR = "#6A6B6C";
 
-const AnimatedView = Animated.View;
+const pointXs = (chartWidth: number): number[] => {
+  "worklet";
+  const colW = chartWidth / 12;
+  const startX = colW / 2;
+  const endX = chartWidth - colW / 2;
+  const stepX = (endX - startX) / 11;
+  return Array.from({ length: 12 }, (_, i) => startX + i * stepX);
+};
+
+const buildFromYs = (ys: readonly number[], chartWidth: number) => {
+  "worklet";
+  const xs = pointXs(chartWidth);
+  if (ys.length < 2) return { linePath: "", areaPath: "" };
+
+  let lp = `M ${xs[0]},${ys[0]}`;
+  for (let i = 0; i < ys.length - 1; i++) {
+    const midX = (xs[i] + xs[i + 1]) / 2;
+    const midY = (ys[i] + ys[i + 1]) / 2;
+    const cp1x = (midX + xs[i]) / 2;
+    const cp2x = (midX + xs[i + 1]) / 2;
+    lp += ` Q ${cp1x},${ys[i]} ${midX},${midY}`;
+    lp += ` Q ${cp2x},${ys[i + 1]} ${xs[i + 1]},${ys[i + 1]}`;
+  }
+
+  const ap =
+    lp +
+    ` L ${xs[ys.length - 1]},${CHART_HEIGHT} ` +
+    `L ${xs[0]},${CHART_HEIGHT} Z`;
+
+  return { linePath: lp, areaPath: ap };
+};
+
+function pointYs(data: { month: string; rate: number | null }[], chartWidth: number): number[] {
+  if (data.length === 0) return [];
+  const maxVal = Math.max(...data.map((d) => d.rate ?? 0), 0.01);
+  const colW = chartWidth / data.length;
+  const startX = colW / 2;
+  const endX = chartWidth - colW / 2;
+  const stepX = (endX - startX) / (data.length - 1);
+  return data.map((d, i) => {
+    const y = CHART_HEIGHT - ((d.rate ?? 0) / maxVal) * (CHART_HEIGHT - 10) - 5;
+    return y;
+  });
+}
+
+function useMonthYSvs(targetYs: number[]) {
+  // Always 12 hooks, always in same order — no conditional hooks
+  const sv0 = useSharedValue(targetYs[0] ?? CHART_HEIGHT);
+  const sv1 = useSharedValue(targetYs[1] ?? CHART_HEIGHT);
+  const sv2 = useSharedValue(targetYs[2] ?? CHART_HEIGHT);
+  const sv3 = useSharedValue(targetYs[3] ?? CHART_HEIGHT);
+  const sv4 = useSharedValue(targetYs[4] ?? CHART_HEIGHT);
+  const sv5 = useSharedValue(targetYs[5] ?? CHART_HEIGHT);
+  const sv6 = useSharedValue(targetYs[6] ?? CHART_HEIGHT);
+  const sv7 = useSharedValue(targetYs[7] ?? CHART_HEIGHT);
+  const sv8 = useSharedValue(targetYs[8] ?? CHART_HEIGHT);
+  const sv9 = useSharedValue(targetYs[9] ?? CHART_HEIGHT);
+  const sv10 = useSharedValue(targetYs[10] ?? CHART_HEIGHT);
+  const sv11 = useSharedValue(targetYs[11] ?? CHART_HEIGHT);
+
+  const all = [sv0, sv1, sv2, sv3, sv4, sv5, sv6, sv7, sv8, sv9, sv10, sv11] as const;
+
+  useEffect(() => {
+    all.forEach((sv, i) => {
+      sv.value = withTiming(targetYs[i] ?? CHART_HEIGHT, { duration: 600 });
+    });
+  }, [targetYs]);
+
+  return all;
+}
 
 export function YearlyAreaChart({ data, width }: YearlyAreaChartProps) {
   const chartWidth = width;
-  const totalHeight = CHART_HEIGHT + 10;
+  const targetYs = useMemo(() => pointYs(data, chartWidth), [data, chartWidth]);
+  const ys = useMonthYSvs(targetYs);
 
-  const { linePath, areaPath } = useMemo(() => {
-    if (data.length === 0) return { linePath: "", areaPath: "" };
+  const lineAnimatedProps = useAnimatedProps(() => {
+    const yvals = ys.map((sv) => sv.value);
+    const paths = buildFromYs(yvals, chartWidth);
+    return { d: paths.linePath };
+  });
 
-    const maxVal = Math.max(...data.map((d) => d.rate ?? 0), 0.01);
-    const colW = chartWidth / data.length;
-    const startX = colW / 2;
-    const endX = chartWidth - colW / 2;
-    const stepX = (endX - startX) / (data.length - 1);
-
-    const points = data.map((d, i) => ({
-      x: startX + i * stepX,
-      y: CHART_HEIGHT - ((d.rate ?? 0) / maxVal) * (CHART_HEIGHT - 10) - 5,
-    }));
-
-    if (points.length < 2) return { linePath: "", areaPath: "" };
-
-    let lp = `M ${points[0].x},${points[0].y}`;
-
-    for (let i = 0; i < points.length - 1; i++) {
-      const curr = points[i];
-      const next = points[i + 1];
-      const midX = (curr.x + next.x) / 2;
-      const midY = (curr.y + next.y) / 2;
-      const cp1x = (midX + curr.x) / 2;
-      const cp2x = (midX + next.x) / 2;
-
-      lp += ` Q ${cp1x},${curr.y} ${midX},${midY}`;
-      lp += ` Q ${cp2x},${next.y} ${next.x},${next.y}`;
-    }
-
-    const ap =
-      lp +
-      ` L ${points[points.length - 1].x},${CHART_HEIGHT}` +
-      ` L ${points[0].x},${CHART_HEIGHT} Z`;
-
-    return { linePath: lp, areaPath: ap };
-  }, [data, chartWidth]);
-
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(10);
-
-  useEffect(() => {
-    opacity.value = withDelay(200, withTiming(1, { duration: 600 }));
-    translateY.value = withDelay(200, withTiming(0, { duration: 600 }));
-  }, [opacity, translateY]);
-
-  const animStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: translateY.value }],
-  }));
+  const areaAnimatedProps = useAnimatedProps(() => {
+    const yvals = ys.map((sv) => sv.value);
+    const paths = buildFromYs(yvals, chartWidth);
+    return { d: paths.areaPath };
+  });
 
   if (data.length === 0) return null;
 
   return (
-    <AnimatedView style={[animStyle, { width: chartWidth, height: totalHeight }]}>
+    <View style={{ width: chartWidth, height: CHART_HEIGHT + 10 }}>
       <Svg width={chartWidth} height={CHART_HEIGHT} viewBox={`0 0 ${chartWidth} ${CHART_HEIGHT}`}>
         <Defs>
           <LinearGradient id="yearFill" x1="0" y1="0" x2="0" y2="1">
@@ -86,9 +118,9 @@ export function YearlyAreaChart({ data, width }: YearlyAreaChartProps) {
             <Stop offset="1" stopColor={STROKE_COLOR} stopOpacity={0.02} />
           </LinearGradient>
         </Defs>
-        <Path d={areaPath} fill="url(#yearFill)" />
-        <Path
-          d={linePath}
+        <AnimatedPath animatedProps={areaAnimatedProps} fill="url(#yearFill)" />
+        <AnimatedPath
+          animatedProps={lineAnimatedProps}
           stroke={STROKE_COLOR}
           strokeWidth={2}
           fill="none"
@@ -97,23 +129,17 @@ export function YearlyAreaChart({ data, width }: YearlyAreaChartProps) {
         />
       </Svg>
 
-      {/* Month labels */}
       <View className="flex-row" style={{ marginTop: 2 }}>
         {data.map((d, i) => (
           <Text
             key={i}
             className="font-bold"
-            style={{
-              flex: 1,
-              fontSize: 8,
-              color: LABEL_COLOR,
-              textAlign: "center",
-            }}
+            style={{ flex: 1, fontSize: 8, color: LABEL_COLOR, textAlign: "center" }}
           >
             {d.month}
           </Text>
         ))}
       </View>
-    </AnimatedView>
+    </View>
   );
 }

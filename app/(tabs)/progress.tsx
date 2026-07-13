@@ -1,19 +1,38 @@
-import { useMemo } from "react";
-import { ScrollView, View, useWindowDimensions, Text as RNText } from "react-native";
+import { useMemo, useState } from "react";
+import {
+  ScrollView,
+  View,
+  useWindowDimensions,
+  Text as RNText,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "@/components/ui/text";
-import { useHabitStore } from "@/lib/store";
+import { useHabitStore, getLocalDateString } from "@/lib/store";
 import { calculateGlobalStats } from "@/lib/derived/stats";
 import {
-  calculateWeeklyBars,
-  calculateMonthRate,
-  calculateYearlyTrend,
   calculateTotals,
+  dailyPercent,
 } from "@/lib/derived/progress-stats";
 import { WeeklyBarChart } from "@/components/progress/weekly-bar-chart";
 import { MonthProgressRing } from "@/components/progress/month-progress-ring";
 import { YearlyAreaChart } from "@/components/progress/yearly-area-chart";
-import { Flame, Trophy, CheckCircle2, XCircle } from "lucide-react-native";
+import {
+  Flame,
+  Trophy,
+  CheckCircle2,
+  XCircle,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react-native";
+
+function avgRate(values: (number | null)[]): number | null {
+  const valid = values.filter((v): v is number => v !== null);
+  return valid.length > 0
+    ? valid.reduce((a, b) => a + b, 0) / valid.length
+    : null;
+}
 
 export default function ProgressScreen() {
   const insets = useSafeAreaInsets();
@@ -23,19 +42,128 @@ export default function ProgressScreen() {
   const habits = useHabitStore((state) => state.habits);
   const logs = useHabitStore((state) => state.logs);
 
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [monthOffset, setMonthOffset] = useState(0);
+  const [yearOffset, setYearOffset] = useState(0);
+
   const stats = useMemo(() => calculateGlobalStats(habits, logs), [habits, logs]);
-  const weekBars = useMemo(() => calculateWeeklyBars(habits, logs), [habits, logs]);
-  const monthData = useMemo(() => calculateMonthRate(habits, logs), [habits, logs]);
-  const yearlyData = useMemo(() => calculateYearlyTrend(habits, logs), [habits, logs]);
   const totals = useMemo(() => calculateTotals(habits, logs), [habits, logs]);
 
-  const weekValidDays = useMemo(() => weekBars.filter((d) => d.hasData).length, [weekBars]);
+  const yearlyData = useMemo(() => {
+    const logSet = new Set(logs.map((l) => `${l.habitId}|${l.date}`));
+    const now = new Date();
+    const year = now.getFullYear() + yearOffset;
+
+    const allRates: (number | null)[] = [];
+    let totalCompleted = 0;
+    let totalScheduled = 0;
+    const months: { month: string; rate: number | null; completed: number; scheduled: number }[] = [];
+
+    for (let m = 0; m < 12; m++) {
+      const daysInMonth = new Date(year, m + 1, 0).getDate();
+      const stopDay = yearOffset === 0 && m === now.getMonth() ? now.getDate() : daysInMonth;
+
+      const monthRates: (number | null)[] = [];
+      let monthCompleted = 0;
+      let monthScheduled = 0;
+
+      for (let day = 1; day <= stopDay; day++) {
+        const d = new Date(year, m, day);
+        const dp = dailyPercent(d, habits, logSet);
+        monthRates.push(dp.pct);
+        allRates.push(dp.pct);
+        monthCompleted += dp.completed;
+        monthScheduled += dp.scheduled;
+      }
+
+      months.push({
+        month: new Date(year, m, 1).toLocaleDateString("en-US", { month: "short" }),
+        rate: avgRate(monthRates),
+        completed: monthCompleted,
+        scheduled: monthScheduled,
+      });
+
+      totalCompleted += monthCompleted;
+      totalScheduled += monthScheduled;
+    }
+
+    return { months, rate: avgRate(allRates), totalCompleted, totalScheduled };
+  }, [habits, logs, yearOffset]);
+
+  // ── Weekly data (offset-aware) ──────────────────────────────────────────
+  const weekBars = useMemo(() => {
+    const logSet = new Set(logs.map((l) => `${l.habitId}|${l.date}`));
+    const today = new Date();
+    const todayStr = getLocalDateString(today);
+    const sun = new Date(today);
+    sun.setDate(sun.getDate() - sun.getDay()); // this week's Sunday
+    sun.setDate(sun.getDate() + weekOffset * 7);
+    sun.setHours(0, 0, 0, 0);
+
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(sun);
+      d.setDate(sun.getDate() + i);
+      const dateStr = getLocalDateString(d);
+      const dp = dailyPercent(d, habits, logSet);
+      const isFuture = dateStr > todayStr;
+      return {
+        day: d.toLocaleDateString("en-US", { weekday: "short" }),
+        date: dateStr,
+        pct: dp.pct ?? 0,
+        completed: dp.completed,
+        scheduled: dp.scheduled,
+        hasData: dp.pct !== null && !isFuture,
+      };
+    });
+  }, [habits, logs, weekOffset]);
+
+  const weekValidDays = useMemo(
+    () => weekBars.filter((d) => d.hasData).length,
+    [weekBars]
+  );
   const weekAvg = useMemo(() => {
     const valid = weekBars.filter((d) => d.hasData);
     return valid.length > 0
       ? valid.reduce((s, d) => s + d.pct, 0) / valid.length
       : null;
   }, [weekBars]);
+  const weekCompleted = useMemo(() => weekBars.reduce((s, d) => s + d.completed, 0), [weekBars]);
+  const weekScheduled = useMemo(() => weekBars.reduce((s, d) => s + d.scheduled, 0), [weekBars]);
+
+  // ── Monthly data (offset-aware) ─────────────────────────────────────────
+  const monthData = useMemo(() => {
+    const logSet = new Set(logs.map((l) => `${l.habitId}|${l.date}`));
+    const today = new Date();
+    const base = new Date(today);
+    base.setMonth(base.getMonth() + monthOffset);
+    const firstOfMonth = new Date(base.getFullYear(), base.getMonth(), 1);
+    const daysInM = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate();
+    const stopDay =
+      monthOffset === 0
+        ? Math.min(today.getDate(), daysInM)
+        : daysInM;
+
+    const rates: (number | null)[] = [];
+    let totalCompleted = 0;
+    let totalScheduled = 0;
+
+    for (let day = 1; day <= stopDay; day++) {
+      const d = new Date(base.getFullYear(), base.getMonth(), day);
+      const dp = dailyPercent(d, habits, logSet);
+      rates.push(dp.pct);
+      totalCompleted += dp.completed;
+      totalScheduled += dp.scheduled;
+    }
+
+    return {
+      rate: avgRate(rates),
+      completed: totalCompleted,
+      scheduled: totalScheduled,
+      validDays: rates.filter((r) => r !== null).length,
+      firstDate: firstOfMonth,
+      lastDate: new Date(base.getFullYear(), base.getMonth(), stopDay),
+    };
+  }, [habits, logs, monthOffset]);
 
   return (
     <ScrollView
@@ -98,25 +226,55 @@ export default function ProgressScreen() {
 
       {/* Weekly bar chart */}
       <View className="mb-4 rounded-2xl border border-border-hairline bg-bg-surface p-4">
-        <View className="flex-row items-center mb-3">
-          <RNText>
-            <Text className="font-bold" style={{ fontSize: 13, color: "#9C9C9D" }}>
-              This Week
-            </Text>
-            {weekBars.length > 0 && (
-              <Text className="font-bold ml-2" style={{ fontSize: 10, color: "#6A6B6C" }}>
-                {"  "}
-                {new Date(weekBars[0].date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                {" – "}
-                {new Date(weekBars[weekBars.length - 1].date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+        <View className="flex-row items-center justify-between mb-3">
+          <View className="flex-row items-center">
+            <Pressable
+              onPress={() => setWeekOffset((w) => w - 1)}
+              className="w-7 h-7 items-center justify-center rounded-sm border border-border-hairline bg-bg-surface/50 mr-0.5"
+            >
+              <ChevronLeft size={16} color="#9C9C9D" />
+            </Pressable>
+            <Pressable
+              onPress={() => setWeekOffset((w) => Math.min(0, w + 1))}
+              className="w-7 h-7 items-center justify-center rounded-sm border border-border-hairline bg-bg-surface/50 mr-2"
+              disabled={weekOffset === 0}
+            >
+              <ChevronRight
+                size={16}
+                color={weekOffset === 0 ? "#3A3A3C" : "#9C9C9D"}
+              />
+            </Pressable>
+            <RNText>
+              <Text className="font-bold" style={{ fontSize: 13, color: "#9C9C9D" }}>
+                {weekOffset === 0 ? "This Week" : "Week"}
               </Text>
-            )}
-          </RNText>
+              {weekBars.length > 0 && (
+                <Text
+                  className="font-bold ml-2"
+                  style={{ fontSize: 10, color: "#6A6B6C" }}
+                >
+                  {"  "}
+                  {new Date(weekBars[0].date).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}
+                  {" – "}
+                  {new Date(weekBars[6].date).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </Text>
+              )}
+            </RNText>
+          </View>
         </View>
         <WeeklyBarChart data={weekBars} />
-        <Text className="font-bold mt-4 text-center" style={{ fontSize: 11, color: "#6A6B6C" }}>
+        <Text
+          className="font-bold mt-4 text-center"
+          style={{ fontSize: 11, color: "#6A6B6C" }}
+        >
           {weekAvg !== null
-            ? `${Math.round(weekAvg * 100)}% avg across ${weekValidDays} day${weekValidDays !== 1 ? "s" : ""}`
+            ? `${Math.round(weekAvg * 100)}% avg · ${weekCompleted} completed · ${weekScheduled - weekCompleted} missed`
             : "No data this week"}
         </Text>
       </View>
@@ -124,25 +282,45 @@ export default function ProgressScreen() {
       {/* Month progress ring */}
       <View className="mb-4 rounded-2xl border border-border-hairline bg-bg-surface p-4">
         <View className="flex-row items-center mb-3">
+          <Pressable
+            onPress={() => setMonthOffset((m) => m - 1)}
+            className="w-7 h-7 items-center justify-center rounded-sm border border-border-hairline bg-bg-surface/50 mr-0.5"
+          >
+            <ChevronLeft size={16} color="#9C9C9D" />
+          </Pressable>
+          <Pressable
+            onPress={() => setMonthOffset((m) => Math.min(0, m + 1))}
+            className="w-7 h-7 items-center justify-center rounded-sm border border-border-hairline bg-bg-surface/50 mr-2"
+            disabled={monthOffset === 0}
+          >
+            <ChevronRight
+              size={16}
+              color={monthOffset === 0 ? "#3A3A3C" : "#9C9C9D"}
+            />
+          </Pressable>
           <RNText>
             <Text className="font-bold" style={{ fontSize: 13, color: "#9C9C9D" }}>
-              This Month
+              {monthOffset === 0 ? "This Month" : monthData.firstDate.toLocaleDateString("en-US", { month: "long" })}
             </Text>
-            <Text className="font-bold ml-2" style={{ fontSize: 10, color: "#6A6B6C" }}>
+            <Text
+              className="font-bold ml-2"
+              style={{ fontSize: 10, color: "#6A6B6C" }}
+            >
               {"  "}
-              {(() => {
-                const today = new Date();
-                const first = new Date(today.getFullYear(), today.getMonth(), 1);
-                return `${first.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${today.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
-              })()}
+              {monthData.firstDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              {" – "}
+              {monthData.lastDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
             </Text>
           </RNText>
         </View>
         <View className="items-center">
           <MonthProgressRing rate={monthData.rate} />
-          <Text className="font-bold mt-4" style={{ fontSize: 11, color: "#6A6B6C" }}>
+          <Text
+            className="font-bold mt-4"
+            style={{ fontSize: 11, color: "#6A6B6C" }}
+          >
             {monthData.rate !== null
-              ? `${Math.round(monthData.rate * 100)}% avg across ${monthData.validDays} day${monthData.validDays !== 1 ? "s" : ""}`
+              ? `${Math.round(monthData.rate * 100)}% avg · ${monthData.completed} completed · ${monthData.scheduled - monthData.completed} missed`
               : "No data this month"}
           </Text>
         </View>
@@ -151,22 +329,47 @@ export default function ProgressScreen() {
       {/* Yearly area chart */}
       <View className="mb-4 rounded-2xl border border-border-hairline bg-bg-surface p-4">
         <View className="flex-row items-center mb-3">
+          <Pressable
+            onPress={() => setYearOffset((y) => y - 1)}
+            className="w-7 h-7 items-center justify-center rounded-sm border border-border-hairline bg-bg-surface/50 mr-0.5"
+          >
+            <ChevronLeft size={16} color="#9C9C9D" />
+          </Pressable>
+          <Pressable
+            onPress={() => setYearOffset((y) => Math.min(0, y + 1))}
+            className="w-7 h-7 items-center justify-center rounded-sm border border-border-hairline bg-bg-surface/50 mr-2"
+            disabled={yearOffset === 0}
+          >
+            <ChevronRight
+              size={16}
+              color={yearOffset === 0 ? "#3A3A3C" : "#9C9C9D"}
+            />
+          </Pressable>
           <RNText>
             <Text className="font-bold" style={{ fontSize: 13, color: "#9C9C9D" }}>
-              This Year
+              {yearOffset === 0 ? "This Year" : String(new Date().getFullYear() + yearOffset)}
             </Text>
             {yearlyData.months.length > 0 && (
-              <Text className="font-bold ml-2" style={{ fontSize: 10, color: "#6A6B6C" }}>
+              <Text
+                className="font-bold ml-2"
+                style={{ fontSize: 10, color: "#6A6B6C" }}
+              >
                 {"  "}
                 {yearlyData.months[0].month} – {yearlyData.months[yearlyData.months.length - 1].month}
               </Text>
             )}
           </RNText>
         </View>
-        <YearlyAreaChart data={yearlyData.months.map((m) => ({ month: m.month, rate: m.rate }))} width={chartWidth - 32} />
-        <Text className="font-bold mt-5 text-center" style={{ fontSize: 11, color: "#6A6B6C" }}>
+        <YearlyAreaChart
+          data={yearlyData.months.map((m) => ({ month: m.month, rate: m.rate }))}
+          width={chartWidth - 32}
+        />
+        <Text
+          className="font-bold mt-5 text-center"
+          style={{ fontSize: 11, color: "#6A6B6C" }}
+        >
           {yearlyData.rate !== null
-            ? `${Math.round(yearlyData.rate * 100)}% avg across ${yearlyData.totalCompleted + yearlyData.totalScheduled} tasks`
+            ? `${Math.round(yearlyData.rate * 100)}% avg · ${yearlyData.totalCompleted} completed · ${yearlyData.totalScheduled - yearlyData.totalCompleted} missed`
             : "No data this year"}
         </Text>
       </View>

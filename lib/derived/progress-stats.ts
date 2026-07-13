@@ -2,7 +2,7 @@ import type { Habit, HabitLog } from "../types";
 import { getLocalDateString } from "../store";
 
 /** Calculates the completion rate (0–1) for a single day, or null if nothing was scheduled. */
-function dailyPercent(
+export function dailyPercent(
   date: Date,
   habits: Habit[],
   logSet: Set<string>

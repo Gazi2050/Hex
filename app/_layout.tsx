@@ -6,6 +6,7 @@ import { NAV_THEME } from "@/lib/theme";
 import { ToastContainer } from "@ncrft/native-toast";
 import { useCallback, useEffect, useState } from "react";
 import LoadingScreen from "./loading";
+import { maybeSeed } from "@/lib/maybe-seed";
 import "./global.css";
 
 type LoadState = "loading" | "fading" | "done";
@@ -17,6 +18,12 @@ export default function RootLayout() {
     const timer = setTimeout(() => setLoadState("fading"), 2200);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (loadState === "done") {
+      maybeSeed();
+    }
+  }, [loadState]);
 
   const handleFadeComplete = useCallback(() => {
     setLoadState("done");
