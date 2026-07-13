@@ -1,5 +1,13 @@
-import { useEffect } from "react";
-import { Alert, KeyboardAvoidingView, Platform, Pressable, View } from "react-native";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { useEffect, useState } from "react";
+import { KeyboardAvoidingView, Platform, Pressable, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArrowLeft } from "lucide-react-native";
@@ -17,6 +25,7 @@ export default function EditHabitScreen() {
 
   const habit = habits.find((h) => h.id === id);
   const existingPriorityCount = habits.filter((h) => h.priority && h.id !== id).length;
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     if (id && !habit) router.back();
@@ -25,22 +34,7 @@ export default function EditHabitScreen() {
   if (!habit) return null;
 
   const handleDelete = () => {
-    Alert.alert(
-      "Delete Habit",
-      `"${habit.name}" and all its history will be permanently deleted.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => {
-            deleteHabit(habit.id);
-            toast.success("Habit deleted");
-            router.back();
-          },
-        },
-      ]
-    );
+    setShowDeleteDialog(true);
   };
 
   return (
@@ -83,6 +77,36 @@ export default function EditHabitScreen() {
           existingPriorityCount={existingPriorityCount}
         />
       </View>
+
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete "{habit.name}"?</DialogTitle>
+            <DialogDescription>
+              This habit and all its history will be permanently deleted. This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <View className="flex-row gap-3 mt-2">
+            <DialogClose asChild>
+              <Pressable className="flex-1 rounded-xl border border-border-hairline px-4 py-3 items-center">
+                <Text className="text-body-sm font-bold text-text-muted">Cancel</Text>
+              </Pressable>
+            </DialogClose>
+            <Pressable
+              className="flex-1 rounded-xl bg-feedback-danger px-4 py-3 items-center"
+              onPress={() => {
+                setShowDeleteDialog(false);
+                deleteHabit(habit.id);
+                toast.success("Habit deleted");
+                router.back();
+              }}
+            >
+              <Text className="text-body-sm font-bold text-white">Delete</Text>
+            </Pressable>
+          </View>
+        </DialogContent>
+      </Dialog>
     </KeyboardAvoidingView>
   );
 }

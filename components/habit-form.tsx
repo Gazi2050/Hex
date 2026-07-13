@@ -408,42 +408,20 @@ export function HabitForm({
           </View>
         </View>
 
-        <View className="mb-6 bg-bg-surface border border-border-hairline p-4 rounded-xl">
+        <View className="mb-6 bg-bg-surface border border-border-hairline p-4 rounded-xl opacity-50">
           <View className="flex-row items-center justify-between">
             <View>
               <Text className="text-body-md font-semibold text-text-primary">
                 Daily Reminder
               </Text>
               <Text className="text-body-sm text-text-muted mt-0.5">
-                Get notified at your set time
+                Coming Soon
               </Text>
             </View>
-            <Switch
-              trackColor={{ false: "#242728", true: selectedColor }}
-              thumbColor="#FFFFFF"
-              ios_backgroundColor="#242728"
-              onValueChange={handleReminderToggle}
-              value={reminder}
-            />
-          </View>
-          {reminder && (
-            <View className="mt-3 pt-3 border-t border-border-hairline">
-              <Pressable
-                onPress={openTimePicker}
-                className="flex-row items-center justify-between py-2 active:opacity-70"
-              >
-                <Text className="text-body-sm text-text-muted">
-                  Notification Time
-                </Text>
-                <Text
-                  style={{ color: selectedColor }}
-                  className="text-body-md font-bold"
-                >
-                  {`${hour}:${displayMin} ${isPm ? "PM" : "AM"}`}
-                </Text>
-              </Pressable>
+            <View className="w-12 h-7 rounded-full bg-neutral-800 items-center justify-center">
+              <View className="w-5 h-5 rounded-full bg-neutral-700" />
             </View>
-          )}
+          </View>
         </View>
       </ScrollView>
 

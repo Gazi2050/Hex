@@ -91,17 +91,6 @@ export function MonthProgressRing({ rate }: MonthProgressRingProps) {
         >
           {hasData ? `${pct}%` : "—"}
         </Text>
-        <Text
-          style={{
-            fontSize: 8,
-            color: "#6A6B6C",
-            fontWeight: "700",
-            marginTop: 2,
-            textAlign: "center",
-          }}
-        >
-          monthly
-        </Text>
       </View>
     </View>
   );
