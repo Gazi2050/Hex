@@ -17,7 +17,8 @@
         "foregroundImage": "./assets/logo_rounded.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.hex"
     },
     "web": {
       "output": "static",
