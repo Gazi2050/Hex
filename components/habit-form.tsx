@@ -22,7 +22,7 @@ import {
 } from "lucide-react-native";
 import { HABIT_ICONS, HABIT_ICON_NAMES } from "@/lib/habit-icons";
 
-export type HabitFormValues = {
+type HabitFormValues = {
   name: string;
   description: string;
   color: string;
@@ -34,7 +34,7 @@ export type HabitFormValues = {
   priority: boolean;
 };
 
-export interface HabitFormProps {
+interface HabitFormProps {
   initialValues?: Partial<HabitFormValues>;
   onSubmit: (values: HabitFormValues) => void;
   submitLabel: string;

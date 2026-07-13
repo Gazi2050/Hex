@@ -15,8 +15,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     const timer = setTimeout(() => setLoadState("fading"), 2200);
-    // Clear any lingering demo data seeds
-    AsyncStorage.multiRemove(["hex-demo-seeded-v1", "hex-demo-seeded-v2", "hex-demo-seeded-v3", "hex-demo-seeded-v4", "hex-habit-storage"]);
     return () => clearTimeout(timer);
   }, []);
 
