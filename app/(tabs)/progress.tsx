@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   ScrollView,
   View,
@@ -6,6 +6,7 @@ import {
   Text as RNText,
   Pressable,
   ActivityIndicator,
+  InteractionManager,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "@/components/ui/text";
@@ -45,11 +46,21 @@ export default function ProgressScreen() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [monthOffset, setMonthOffset] = useState(0);
   const [yearOffset, setYearOffset] = useState(0);
+  const [deferred, setDeferred] = useState(false);
 
-  const stats = useMemo(() => calculateGlobalStats(habits, logs), [habits, logs]);
-  const totals = useMemo(() => calculateTotals(habits, logs), [habits, logs]);
+  useEffect(() => {
+    // Defer heavy calculations to after first paint so spinner can render
+    const id = setTimeout(() => setDeferred(true), 50);
+    return () => clearTimeout(id);
+  }, []);
+
+  const defaultStats = { streak: 0, bestStreak: 0, todayCompleted: 0, todayScheduled: 0, totalDone: 0, level: 1, levelName: "Cinder", levelProgress: 0 };
+  const defaultTotals = { totalCompleted: 0, totalMissed: 0 };
+  const stats = useMemo(() => (deferred ? calculateGlobalStats(habits, logs) : defaultStats), [deferred, habits, logs]);
+  const totals = useMemo(() => (deferred ? calculateTotals(habits, logs) : defaultTotals), [deferred, habits, logs]);
 
   const yearlyData = useMemo(() => {
+    if (!deferred) return { months: [] as { month: string; rate: number | null; completed: number; scheduled: number }[], rate: null as number | null, totalCompleted: 0, totalScheduled: 0 };
     const logSet = new Set(logs.map((l) => `${l.habitId}|${l.date}`));
     const now = new Date();
     const year = now.getFullYear() + yearOffset;
@@ -92,6 +103,7 @@ export default function ProgressScreen() {
 
   // ── Weekly data (offset-aware) ──────────────────────────────────────────
   const weekBars = useMemo(() => {
+    if (!deferred) return [];
     const logSet = new Set(logs.map((l) => `${l.habitId}|${l.date}`));
     const today = new Date();
     const todayStr = getLocalDateString(today);
@@ -132,6 +144,7 @@ export default function ProgressScreen() {
 
   // ── Monthly data (offset-aware) ─────────────────────────────────────────
   const monthData = useMemo(() => {
+    if (!deferred) return { rate: null, completed: 0, scheduled: 0, validDays: 0, firstDate: new Date(), lastDate: new Date() };
     const logSet = new Set(logs.map((l) => `${l.habitId}|${l.date}`));
     const today = new Date();
     const base = new Date(today);
@@ -182,9 +195,15 @@ export default function ProgressScreen() {
         </Text>
       </View>
 
-      {/* Stats row — 2×2 grid of individual cards */}
-      <View className="mb-4 gap-3">
-        <View className="flex-row gap-3">
+      {!deferred ? (
+        <View className="items-center justify-center" style={{ paddingTop: 120 }}>
+          <ActivityIndicator size="large" color="#59D499" />
+        </View>
+      ) : (
+        <>
+          {/* Stats row — 2×2 grid of individual cards */}
+          <View className="mb-4 gap-3">
+            <View className="flex-row gap-3">
           {[
             { icon: Flame, label: "Current", value: `${stats.streak} days` },
             { icon: Trophy, label: "Longest", value: `${stats.bestStreak} days` },
@@ -373,6 +392,8 @@ export default function ProgressScreen() {
             : "No data this year"}
         </Text>
       </View>
+        </>
+      )}
     </ScrollView>
   );
 }
