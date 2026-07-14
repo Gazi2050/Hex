@@ -84,7 +84,7 @@ export const useHabitStore = create<HabitState>()(
             }
             return a;
           });
-          return { habits: nextHabits, achievements };
+          return { habits: nextHabits, achievements, habitsOrder: [...state.habitsOrder, id] };
         });
       },
 

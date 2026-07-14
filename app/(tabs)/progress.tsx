@@ -254,7 +254,7 @@ export default function ProgressScreen() {
 
       {/* Weekly bar chart */}
       <View className="mb-4 rounded-2xl border border-border-hairline bg-bg-surface p-4">
-        <View className="flex-row items-center justify-between mb-3">
+        <View className="flex-row items-center justify-between mb-2">
           <View className="flex-row items-center">
             <Pressable
               onPress={() => setWeekOffset((w) => w - 1)}
@@ -298,7 +298,7 @@ export default function ProgressScreen() {
         </View>
         <WeeklyBarChart data={weekBars} />
         <Text
-          className="font-bold mt-4 text-center"
+          className="font-bold mt-1 text-center"
           style={{ fontSize: 11, color: "#6A6B6C" }}
         >
           {weekAvg !== null
@@ -344,7 +344,7 @@ export default function ProgressScreen() {
         <View className="items-center">
           <MonthProgressRing rate={monthData.rate} />
           <Text
-            className="font-bold mt-4"
+            className="font-bold mt-1"
             style={{ fontSize: 11, color: "#6A6B6C" }}
           >
             {monthData.rate !== null

@@ -1,11 +1,11 @@
+import { Text } from "@/components/ui/text";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
+  useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { Text } from "@/components/ui/text";
 
 interface WeeklyBarChartProps {
   data: {
@@ -17,8 +17,8 @@ interface WeeklyBarChartProps {
   }[];
 }
 
-const BAR_HEIGHT = 62;
-const MIN_BAR_HEIGHT = 20;
+const BAR_HEIGHT = 100;
+const MIN_BAR_HEIGHT = 16;
 const BAR_FILL = "#59D499";
 const BAR_ZERO = "#1c1c1e";
 const BAR_RADIUS = 4;
@@ -37,9 +37,7 @@ function Bar({
   show: boolean;
 }) {
   const targetH =
-    pct > 0
-      ? Math.max(pct * BAR_HEIGHT, MIN_BAR_HEIGHT)
-      : MIN_BAR_HEIGHT;
+    pct > 0 ? Math.max(pct * BAR_HEIGHT, MIN_BAR_HEIGHT) : MIN_BAR_HEIGHT;
   const backgroundColor = pct > 0 ? BAR_FILL : BAR_ZERO;
   const label = Math.round(pct * 100);
 
@@ -73,24 +71,27 @@ function Bar({
               width: "100%",
               backgroundColor,
               borderRadius: BAR_RADIUS,
-              overflow: "hidden",
+              overflow: "visible",
+              justifyContent: "flex-end",
+              alignItems: "center",
             },
             animatedStyle,
           ]}
-        />
+        >
+          <Text
+            className="font-bold text-center absolute"
+            style={{
+              fontSize: 10,
+              color: pct > 0 ? "#000000" : ZERO_TEXT_COLOR,
+              bottom: -4,
+              left: 0,
+              right: 0,
+            }}
+          >
+            {label}%
+          </Text>
+        </AnimatedView>
       </View>
-      <Text
-        className="font-bold text-center absolute"
-        style={{
-          fontSize: 10,
-          color: pct > 0 ? "#000000" : ZERO_TEXT_COLOR,
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      >
-        {label}%
-      </Text>
     </View>
   );
 }
@@ -104,9 +105,12 @@ export function WeeklyBarChart({ data }: WeeklyBarChartProps) {
   }, []);
 
   return (
-    <View className="gap-1.5">
+    <View className="gap-1">
       {/* Bars — flex-row, bottom-aligned */}
-      <View className="flex-row items-end justify-between gap-2" style={{ height: BAR_HEIGHT }}>
+      <View
+        className="flex-row items-end justify-between gap-2"
+        style={{ height: BAR_HEIGHT }}
+      >
         {data.map((d, i) => (
           <Bar key={i} pct={d.pct} index={i} show={showBars} />
         ))}
@@ -116,7 +120,10 @@ export function WeeklyBarChart({ data }: WeeklyBarChartProps) {
       <View className="flex-row justify-between gap-2">
         {data.map((d, i) => (
           <View key={i} className="flex-1 items-center">
-            <Text className="font-bold" style={{ fontSize: 10, color: LABEL_COLOR }}>
+            <Text
+              className="font-bold"
+              style={{ fontSize: 10, color: LABEL_COLOR }}
+            >
               {d.day}
             </Text>
           </View>
