@@ -18,7 +18,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.hex"
+      "package": "com.gazi.hex"
     },
     "web": {
       "output": "static",

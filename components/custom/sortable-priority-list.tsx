@@ -1,6 +1,5 @@
 import { useCallback } from "react";
 import { View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   Sortable,
   SortableItem,
@@ -67,17 +66,15 @@ export function SortablePriorityList({
   );
 
   return (
-    <GestureHandlerRootView>
-      <View className="rounded-2xl border border-border-hairline overflow-hidden">
-        <Sortable
-          data={habits}
-          renderItem={renderItem}
-          itemHeight={ITEM_HEIGHT}
-          useFlatList={false}
-          style={{ backgroundColor: "transparent" }}
-          contentContainerStyle={{ backgroundColor: "transparent" }}
-        />
-      </View>
-    </GestureHandlerRootView>
+    <View className="rounded-2xl border border-border-hairline overflow-hidden">
+      <Sortable
+        data={habits}
+        renderItem={renderItem}
+        itemHeight={ITEM_HEIGHT}
+        useFlatList={false}
+        style={{ backgroundColor: "transparent" }}
+        contentContainerStyle={{ backgroundColor: "transparent" }}
+      />
+    </View>
   );
 }
