@@ -9,6 +9,7 @@ import {
   InteractionManager,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useIsFocused } from "@react-navigation/native";
 import { Text } from "@/components/ui/text";
 import { useHabitStore, getLocalDateString } from "@/lib/store";
 import { calculateGlobalStats } from "@/lib/derived/stats";
@@ -46,13 +47,17 @@ export default function ProgressScreen() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [monthOffset, setMonthOffset] = useState(0);
   const [yearOffset, setYearOffset] = useState(0);
+  const isFocused = useIsFocused();
   const [deferred, setDeferred] = useState(false);
 
   useEffect(() => {
-    // Defer heavy calculations to after first paint so spinner can render
-    const id = setTimeout(() => setDeferred(true), 50);
-    return () => clearTimeout(id);
-  }, []);
+    if (isFocused) {
+      const id = setTimeout(() => setDeferred(true), 50);
+      return () => clearTimeout(id);
+    } else {
+      setDeferred(false);
+    }
+  }, [isFocused]);
 
   const defaultStats = { streak: 0, bestStreak: 0, todayCompleted: 0, todayScheduled: 0, totalDone: 0, level: 1, levelName: "Cinder", levelProgress: 0 };
   const defaultTotals = { totalCompleted: 0, totalMissed: 0 };

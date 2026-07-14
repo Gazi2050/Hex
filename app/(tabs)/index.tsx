@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useIsFocused } from "@react-navigation/native";
 import { Text } from "@/components/ui/text";
 import { useHabits } from "@/lib/hooks/useHabits";
 import { useHabitStore } from "@/lib/store";
@@ -17,11 +18,13 @@ export default function Index() {
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
   const habits = useHabitStore((state) => state.habits);
   const logs = useHabitStore((state) => state.logs);
+  const isFocused = useIsFocused();
   const requestDelete = useUIStore((s) => s.requestDelete);
 
   const stats = useMemo(() => {
+    if (!isFocused) return null;
     return calculateGlobalStats(habits, logs);
-  }, [habits, logs]);
+  }, [isFocused, habits, logs]);
 
   return (
     <View className="flex-1 bg-bg-canvas">

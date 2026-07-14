@@ -10,12 +10,12 @@ export function useHabits() {
   const habitsOrder = useHabitStore((state) => state.habitsOrder);
 
   const handleToggle = useCallback((id: string) => {
-    const habit = habits.find((h) => h.id === id);
+    const habit = useHabitStore.getState().habits.find((h) => h.id === id);
     toggleHabit(id);
     if (habit && !habit.completedToday) {
       toast.success("Done");
     }
-  }, [toggleHabit, habits]);
+  }, [toggleHabit]);
 
   const completedCount = useMemo(() => countCompleted(habits), [habits]);
   const sortedHabits = useMemo(() => {
