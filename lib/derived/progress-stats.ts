@@ -16,7 +16,7 @@ export function dailyPercent(
 
   for (const h of habits) {
     if (h.repeatDays[dayOfWeek] && h.createdAt.slice(0, 10) <= dateStr) {
-      scheduled += h.frequency;
+      scheduled += 1;
       if (logSet.has(`${h.id}|${dateStr}`)) completed += 1;
     }
   }
