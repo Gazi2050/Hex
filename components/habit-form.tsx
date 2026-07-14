@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   ScrollView,
@@ -10,8 +10,10 @@ import {
   Platform,
   Modal,
 } from "react-native";
+import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "@/components/ui/text";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Plus,
   Minus,
@@ -38,8 +40,8 @@ interface HabitFormProps {
   initialValues?: Partial<HabitFormValues>;
   onSubmit: (values: HabitFormValues) => void;
   submitLabel: string;
-  onDelete?: () => void;
   existingPriorityCount?: number;
+  resetSignal?: number;
 }
 
 function parseTimeString(
@@ -73,8 +75,8 @@ export function HabitForm({
   initialValues,
   onSubmit,
   submitLabel,
-  onDelete,
   existingPriorityCount = 0,
+  resetSignal,
 }: HabitFormProps) {
   const insets = useSafeAreaInsets();
 
@@ -100,6 +102,29 @@ export function HabitForm({
   const [tempHour, setTempHour] = useState("8");
   const [tempMinute, setTempMinute] = useState("00");
   const [tempIsPm, setTempIsPm] = useState(false);
+
+  // Reset the live form instance when resetSignal changes (open create/edit).
+  // Lets the parent pre-mount this component without remounting → instant open.
+  useEffect(() => {
+    const p = parseTimeString(initialValues?.reminderTime);
+    setSelectedIconName(initialValues?.iconName ?? "Hexagon");
+    setName(initialValues?.name ?? "");
+    setSelectedColor(initialValues?.color ?? "#59D499");
+    setRepeatDays(
+      initialValues?.repeatDays ?? [true, true, true, true, true, true, true]
+    );
+    setFrequency(initialValues?.frequency ?? 1);
+    setReminder(initialValues?.reminder ?? false);
+    setPriorityChecked(initialValues?.priority ?? false);
+    setHour(p.hour);
+    setMinute(p.minute);
+    setIsPm(p.isPm);
+    setShowTimePicker(false);
+    setTempHour(String(p.hour));
+    setTempMinute(p.minute < 10 ? `0${p.minute}` : String(p.minute));
+    setTempIsPm(p.isPm);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetSignal]);
 
   const activeDaysCount = repeatDays.filter(Boolean).length;
   const isHabit = activeDaysCount >= 4;
@@ -188,6 +213,7 @@ export function HabitForm({
           paddingTop: 20,
         }}
         keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled
       >
         <View className="items-center mb-8">
           <View
@@ -382,7 +408,15 @@ export function HabitForm({
         </View>
 
         {/* Priority */}
-        <View className="mb-6 bg-bg-surface border border-border-hairline p-4 rounded-xl">
+        <Pressable
+          onPress={() => {
+            if (!priorityChecked && existingPriorityCount >= 3) return;
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setPriorityChecked(!priorityChecked);
+          }}
+          disabled={!priorityChecked && existingPriorityCount >= 3}
+          className="mb-6 bg-bg-surface border border-border-hairline p-4 rounded-xl active:opacity-80"
+        >
           <View className="flex-row items-center justify-between">
             <View className="flex-1 mr-3">
               <Text className="text-body-md font-semibold text-text-primary">
@@ -392,21 +426,21 @@ export function HabitForm({
                 Display as a priority task{!priorityChecked && existingPriorityCount >= 3 ? " (max 3 reached)" : ""}
               </Text>
             </View>
-            <Pressable
-              onPress={() => {
+            <Checkbox
+              checked={priorityChecked}
+              onCheckedChange={() => {
                 if (!priorityChecked && existingPriorityCount >= 3) return;
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 setPriorityChecked(!priorityChecked);
               }}
-              className="w-6 h-6 rounded-md border-2 items-center justify-center active:scale-90"
-              style={{
-                backgroundColor: priorityChecked ? "#59D499" : "transparent",
-                borderColor: priorityChecked ? "#59D499" : "#6A6B6C",
-              }}
-            >
-              {priorityChecked && <Check size={14} color="#000000" strokeWidth={3} />}
-            </Pressable>
+              disabled={!priorityChecked && existingPriorityCount >= 3}
+              className="h-6 w-6"
+              checkedClassName="bg-[#59D499] border-[#59D499]"
+              indicatorClassName="bg-[#59D499]"
+              iconClassName="text-black"
+            />
           </View>
-        </View>
+        </Pressable>
 
         <View className="mb-6 bg-bg-surface border border-border-hairline p-4 rounded-xl opacity-50">
           <View className="flex-row items-center justify-between">
@@ -437,16 +471,6 @@ export function HabitForm({
             {submitLabel}
           </Text>
         </Pressable>
-        {onDelete && (
-          <Pressable
-            onPress={onDelete}
-            className="h-12 items-center justify-center rounded-2xl border border-feedback-danger mt-2"
-          >
-            <Text className="text-body-md font-bold text-feedback-danger">
-              Delete Habit
-            </Text>
-          </Pressable>
-        )}
       </View>
 
       <Modal

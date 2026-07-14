@@ -3,6 +3,7 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "@/components/ui/text";
 import { useHabits } from "@/lib/hooks/useHabits";
+import { useUIStore } from "@/lib/ui-store";
 import { HabitRow } from "@/components/custom/habit-row";
 import { HabitDetailSheet } from "@/components/custom/habit-detail-sheet";
 import { Hexagon } from "lucide-react-native";
@@ -11,6 +12,7 @@ export default function HabitsScreen() {
   const insets = useSafeAreaInsets();
   const { sortedHabits, handleToggle } = useHabits();
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
+  const requestDelete = useUIStore((s) => s.requestDelete);
 
   return (
     <View className="flex-1 bg-bg-canvas">
@@ -37,6 +39,7 @@ export default function HabitsScreen() {
                 habit={habit}
                 onToggle={handleToggle}
                 onPress={(h) => setSelectedHabitId(h.id)}
+                onLongPress={(h) => requestDelete(h.id)}
               />
             ))
           ) : (

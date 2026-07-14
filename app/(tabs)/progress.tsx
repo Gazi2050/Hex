@@ -60,7 +60,7 @@ export default function ProgressScreen() {
   const totals = useMemo(() => (deferred ? calculateTotals(habits, logs) : defaultTotals), [deferred, habits, logs]);
 
   const yearlyData = useMemo(() => {
-    if (!deferred) return { months: [] as { month: string; rate: number | null; completed: number; scheduled: number }[], rate: null as number | null, totalCompleted: 0, totalScheduled: 0 };
+    if (!deferred) return { months: [] as { month: string; rate: number | null; completed: number; scheduled: number; missed: number }[], rate: null as number | null, totalCompleted: 0, totalScheduled: 0, totalMissed: 0 };
     const logSet = new Set(logs.map((l) => `${l.habitId}|${l.date}`));
     const now = new Date();
     const year = now.getFullYear() + yearOffset;
@@ -68,7 +68,8 @@ export default function ProgressScreen() {
     const allRates: (number | null)[] = [];
     let totalCompleted = 0;
     let totalScheduled = 0;
-    const months: { month: string; rate: number | null; completed: number; scheduled: number }[] = [];
+    let totalMissed = 0;
+    const months: { month: string; rate: number | null; completed: number; scheduled: number; missed: number }[] = [];
 
     for (let m = 0; m < 12; m++) {
       const daysInMonth = new Date(year, m + 1, 0).getDate();
@@ -77,6 +78,7 @@ export default function ProgressScreen() {
       const monthRates: (number | null)[] = [];
       let monthCompleted = 0;
       let monthScheduled = 0;
+      let monthMissed = 0;
 
       for (let day = 1; day <= stopDay; day++) {
         const d = new Date(year, m, day);
@@ -85,6 +87,7 @@ export default function ProgressScreen() {
         allRates.push(dp.pct);
         monthCompleted += dp.completed;
         monthScheduled += dp.scheduled;
+        monthMissed += dp.missed;
       }
 
       months.push({
@@ -92,13 +95,15 @@ export default function ProgressScreen() {
         rate: avgRate(monthRates),
         completed: monthCompleted,
         scheduled: monthScheduled,
+        missed: monthMissed,
       });
 
       totalCompleted += monthCompleted;
       totalScheduled += monthScheduled;
+      totalMissed += monthMissed;
     }
 
-    return { months, rate: avgRate(allRates), totalCompleted, totalScheduled };
+    return { months, rate: avgRate(allRates), totalCompleted, totalScheduled, totalMissed };
   }, [deferred, habits, logs, yearOffset]);
 
   // ── Weekly data (offset-aware) ──────────────────────────────────────────
@@ -124,6 +129,7 @@ export default function ProgressScreen() {
         pct: dp.pct ?? 0,
         completed: dp.completed,
         scheduled: dp.scheduled,
+        missed: dp.missed,
         hasData: dp.pct !== null && !isFuture,
       };
     });
@@ -140,11 +146,11 @@ export default function ProgressScreen() {
       : null;
   }, [weekBars]);
   const weekCompleted = useMemo(() => weekBars.reduce((s, d) => s + d.completed, 0), [weekBars]);
-  const weekScheduled = useMemo(() => weekBars.reduce((s, d) => s + d.scheduled, 0), [weekBars]);
+  const weekMissed = useMemo(() => weekBars.reduce((s, d) => s + d.missed, 0), [weekBars]);
 
   // ── Monthly data (offset-aware) ─────────────────────────────────────────
   const monthData = useMemo(() => {
-    if (!deferred) return { rate: null, completed: 0, scheduled: 0, validDays: 0, firstDate: new Date(), lastDate: new Date() };
+    if (!deferred) return { rate: null, completed: 0, scheduled: 0, missed: 0, validDays: 0, firstDate: new Date(), lastDate: new Date() };
     const logSet = new Set(logs.map((l) => `${l.habitId}|${l.date}`));
     const today = new Date();
     const base = new Date(today);
@@ -159,6 +165,7 @@ export default function ProgressScreen() {
     const rates: (number | null)[] = [];
     let totalCompleted = 0;
     let totalScheduled = 0;
+    let totalMissed = 0;
 
     for (let day = 1; day <= stopDay; day++) {
       const d = new Date(base.getFullYear(), base.getMonth(), day);
@@ -166,12 +173,14 @@ export default function ProgressScreen() {
       rates.push(dp.pct);
       totalCompleted += dp.completed;
       totalScheduled += dp.scheduled;
+      totalMissed += dp.missed;
     }
 
     return {
       rate: avgRate(rates),
       completed: totalCompleted,
       scheduled: totalScheduled,
+      missed: totalMissed,
       validDays: rates.filter((r) => r !== null).length,
       firstDate: firstOfMonth,
       lastDate: new Date(base.getFullYear(), base.getMonth(), stopDay),
@@ -293,7 +302,7 @@ export default function ProgressScreen() {
           style={{ fontSize: 11, color: "#6A6B6C" }}
         >
           {weekAvg !== null
-            ? `${Math.round(weekAvg * 100)}% avg · ${weekCompleted} completed · ${weekScheduled - weekCompleted} missed`
+            ? `${Math.round(weekAvg * 100)}% avg · ${weekCompleted} completed · ${weekMissed} missed`
             : "No data this week"}
         </Text>
       </View>
@@ -339,7 +348,7 @@ export default function ProgressScreen() {
             style={{ fontSize: 11, color: "#6A6B6C" }}
           >
             {monthData.rate !== null
-              ? `${Math.round(monthData.rate * 100)}% avg · ${monthData.completed} completed · ${monthData.scheduled - monthData.completed} missed`
+              ? `${Math.round(monthData.rate * 100)}% avg · ${monthData.completed} completed · ${monthData.missed} missed`
               : "No data this month"}
           </Text>
         </View>
@@ -388,7 +397,7 @@ export default function ProgressScreen() {
           style={{ fontSize: 11, color: "#6A6B6C" }}
         >
           {yearlyData.rate !== null
-            ? `${Math.round(yearlyData.rate * 100)}% avg · ${yearlyData.totalCompleted} completed · ${yearlyData.totalScheduled - yearlyData.totalCompleted} missed`
+            ? `${Math.round(yearlyData.rate * 100)}% avg · ${yearlyData.totalCompleted} completed · ${yearlyData.totalMissed} missed`
             : "No data this year"}
         </Text>
       </View>

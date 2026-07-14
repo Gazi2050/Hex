@@ -7,7 +7,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, View, InteractionManager } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArrowLeft } from "lucide-react-native";
@@ -68,9 +68,11 @@ export default function EditHabitScreen() {
             priority: habit.priority,
           }}
           onSubmit={(values) => {
-            updateHabit(habit.id, values);
-            toast.success("Habit updated");
             router.back();
+            InteractionManager.runAfterInteractions(() => {
+              updateHabit(habit.id, values);
+              toast.success("Habit updated");
+            });
           }}
           submitLabel="Save Changes"
           onDelete={handleDelete}
@@ -97,9 +99,11 @@ export default function EditHabitScreen() {
               className="flex-1 rounded-xl bg-feedback-danger px-4 py-3 items-center"
               onPress={() => {
                 setShowDeleteDialog(false);
-                deleteHabit(habit.id);
-                toast.success("Habit deleted");
                 router.back();
+                InteractionManager.runAfterInteractions(() => {
+                  deleteHabit(habit.id);
+                  toast.success("Habit deleted");
+                });
               }}
             >
               <Text className="text-body-sm font-bold text-white">Delete</Text>

@@ -1,4 +1,4 @@
-import { View, Pressable, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Pressable, KeyboardAvoidingView, Platform, InteractionManager } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHabitStore } from "@/lib/store";
@@ -35,9 +35,11 @@ export default function CreateHabitScreen() {
 
         <HabitForm
           onSubmit={(values) => {
-            addHabit(values);
-            toast.success("Habit created");
             router.back();
+            InteractionManager.runAfterInteractions(() => {
+              addHabit(values);
+              toast.success("Habit created");
+            });
           }}
           submitLabel="Create Habit"
           existingPriorityCount={existingPriorityCount}

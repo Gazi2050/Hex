@@ -14,8 +14,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { LucideIcon } from "lucide-react-native";
 import { Home, ListTodo, LineChart, Settings2, Plus } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
-import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
+import { useUIStore } from "@/lib/ui-store";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -150,6 +150,7 @@ export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
   const isFirstRender = useRef(true);
+  const openCreate = useUIStore((s) => s.openCreate);
 
   const barWidth  = screenWidth - BAR_MARGIN;
   const totalSlots = state.routes.length + 1; // 4 routes + 1 center action
@@ -173,7 +174,7 @@ export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
 
   const handlePlusPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push("/create-habit");
+    openCreate();
   };
 
   // First-render bouncy entrance: 0.8 → 1.15 → 1.0

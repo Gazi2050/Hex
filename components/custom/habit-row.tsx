@@ -5,6 +5,7 @@ import { HabitTypeBadge } from "@/components/custom/habit-type-badge";
 import { Text } from "@/components/ui/text";
 import type { Habit } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import * as Haptics from "expo-haptics";
 import * as React from "react";
 import { Pressable, View } from "react-native";
 
@@ -12,13 +13,23 @@ type HabitRowProps = {
   habit: Habit;
   onToggle: (id: string) => void;
   onPress?: (habit: Habit) => void;
+  onLongPress?: (habit: Habit) => void;
   className?: string;
 };
 
-function HabitRow({ habit, onToggle, onPress, className }: HabitRowProps) {
+function HabitRow({ habit, onToggle, onPress, onLongPress, className }: HabitRowProps) {
   return (
     <Pressable
       onPress={() => onPress?.(habit)}
+      onLongPress={
+        onLongPress
+          ? () => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              onLongPress(habit);
+            }
+          : undefined
+      }
+      delayLongPress={400}
       className={cn(
         "flex-row items-center border-b border-border-hairline bg-bg-surface px-4 py-3 active:bg-bg-elevated",
         habit.completedToday ? "opacity-70" : "",

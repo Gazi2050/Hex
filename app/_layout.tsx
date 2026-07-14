@@ -6,6 +6,8 @@ import { NAV_THEME } from "@/lib/theme";
 import { ToastContainer } from "@ncrft/native-toast";
 import { useCallback, useEffect, useState } from "react";
 import LoadingScreen from "./loading";
+import { HabitFormSheet } from "@/components/custom/habit-form-sheet";
+import { DeleteHabitDialog } from "@/components/custom/delete-habit-dialog";
 import "./global.css";
 
 type LoadState = "loading" | "fading" | "done";
@@ -30,6 +32,10 @@ export default function RootLayout() {
       {loadState !== "loading" && (
         <Stack screenOptions={{ headerShown: false }} />
       )}
+
+      {/* Habit create/edit form — pre-mounted overlay (smooth open + close) */}
+      <HabitFormSheet />
+      <DeleteHabitDialog />
 
       {/* Loading overlay sits on top, fades out, then unmounts */}
       {loadState !== "done" && (

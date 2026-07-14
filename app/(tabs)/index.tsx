@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "@/components/ui/text";
 import { useHabits } from "@/lib/hooks/useHabits";
 import { useHabitStore } from "@/lib/store";
+import { useUIStore } from "@/lib/ui-store";
 import { calculateGlobalStats } from "@/lib/derived/stats";
 import StreakHeroCard from "@/components/home/streak-hero-card";
 import { HabitRow } from "@/components/custom/habit-row";
@@ -16,6 +17,7 @@ export default function Index() {
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
   const habits = useHabitStore((state) => state.habits);
   const logs = useHabitStore((state) => state.logs);
+  const requestDelete = useUIStore((s) => s.requestDelete);
 
   const stats = useMemo(() => {
     return calculateGlobalStats(habits, logs);
@@ -62,6 +64,7 @@ export default function Index() {
                   habit={habit}
                   onToggle={handleToggle}
                   onPress={(h) => setSelectedHabitId(h.id)}
+                  onLongPress={(h) => requestDelete(h.id)}
                 />
               ))
             ) : (
