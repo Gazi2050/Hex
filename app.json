@@ -4,7 +4,7 @@
     "slug": "hex",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo_rounded.png",
+    "icon": "./assets/app_logo.png",
     "scheme": "hex",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,7 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#171A31",
-        "foregroundImage": "./assets/logo_rounded.png"
+        "foregroundImage": "./assets/app_logo.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -23,14 +23,14 @@
     "web": {
       "output": "static",
       "bundler": "metro",
-      "favicon": "./assets/logo_rounded.png"
+      "favicon": "./assets/app_logo.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/logo_rounded.png",
+          "image": "./assets/logo_adaptive_foreground.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
