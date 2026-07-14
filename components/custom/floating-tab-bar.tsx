@@ -327,31 +327,40 @@ export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
         })}
 
         {/* ── Center + button (flush, inline) ──────────────────────────── */}
-        <Animated.View
-          style={[
-            plusAnimatedStyle,
-            {
-              width: PLUS_SIZE,
-              height: PLUS_SIZE,
-              borderRadius: PLUS_SIZE / 2,
-              backgroundColor: PLUS_COLOR,
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 20,
-            },
-          ]}
+        <View
+          style={{
+            width: slotWidth,
+            height: BAR_HEIGHT,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
-          <Pressable
-            onPress={handlePlusPress}
-            onPressIn={() => { plusScale.value = withSpring(0.92, SPRING_SNAPPY); }}
-            onPressOut={() => { plusScale.value = withSpring(1.0, SPRING_SNAPPY); }}
-            style={{ width: PLUS_SIZE, height: PLUS_SIZE, alignItems: "center", justifyContent: "center" }}
-            accessibilityRole="button"
-            accessibilityLabel="Create habit"
+          <Animated.View
+            style={[
+              plusAnimatedStyle,
+              {
+                width: PLUS_SIZE,
+                height: PLUS_SIZE,
+                borderRadius: PLUS_SIZE / 2,
+                backgroundColor: PLUS_COLOR,
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 20,
+              },
+            ]}
           >
-            <Plus size={26} color={PLUS_ICON_COLOR} strokeWidth={2.75} />
-          </Pressable>
-        </Animated.View>
+            <Pressable
+              onPress={handlePlusPress}
+              onPressIn={() => { plusScale.value = withSpring(0.92, SPRING_SNAPPY); }}
+              onPressOut={() => { plusScale.value = withSpring(1.0, SPRING_SNAPPY); }}
+              style={{ width: PLUS_SIZE, height: PLUS_SIZE, alignItems: "center", justifyContent: "center" }}
+              accessibilityRole="button"
+              accessibilityLabel="Create habit"
+            >
+              <Plus size={26} color={PLUS_ICON_COLOR} strokeWidth={2.75} />
+            </Pressable>
+          </Animated.View>
+        </View>
 
         {/* ── Icon slots (right: tabs 2-3) ────────────────────────────── */}
         {state.routes.slice(2).map((route, index) => {
