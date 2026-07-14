@@ -22,7 +22,7 @@ export default function Index() {
   const requestDelete = useUIStore((s) => s.requestDelete);
 
   const stats = useMemo(() => {
-    if (!isFocused) return null;
+    if (!isFocused) return { streak: 0, bestStreak: 0, todayCompleted: 0, todayScheduled: 0, totalDone: 0, level: 1, levelName: "Cinder", levelProgress: 0 };
     return calculateGlobalStats(habits, logs);
   }, [isFocused, habits, logs]);
 

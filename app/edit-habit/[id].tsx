@@ -7,7 +7,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, View, InteractionManager } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArrowLeft } from "lucide-react-native";

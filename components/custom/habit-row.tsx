@@ -30,7 +30,7 @@ function HabitRow({ habit, onToggle, onPress, onLongPress, handle, className }: 
             }
           : undefined
       }
-      delayLongPress={400}
+      delayLongPress={300}
       className={cn(
         "flex-row items-center border-b border-border-hairline bg-bg-surface px-4 py-3.5 active:bg-bg-elevated",
         className

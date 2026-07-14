@@ -6,7 +6,6 @@ import Animated, {
   useSharedValue,
   useAnimatedProps,
   withTiming,
-  withDelay,
 } from "react-native-reanimated";
 import { Text } from "@/components/ui/text";
 import { themeTokens } from "@/lib/design-tokens";
@@ -36,10 +35,7 @@ function StreakRing({ streak, completed, scheduled }: StreakRingProps) {
   }));
 
   React.useEffect(() => {
-    progress.value = withDelay(
-      300,
-      withTiming(percentage, { duration: 600 })
-    );
+    progress.value = withTiming(percentage, { duration: 300 });
   }, [percentage, progress]);
 
   return (

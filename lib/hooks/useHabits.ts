@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useHabitStore } from "@/lib/store";
 import { countCompleted } from "@/lib/actions/habit-actions";
-import { toast } from "@ncrft/native-toast";
 
 export function useHabits() {
   const habits = useHabitStore((state) => state.habits);
@@ -10,11 +9,7 @@ export function useHabits() {
   const habitsOrder = useHabitStore((state) => state.habitsOrder);
 
   const handleToggle = useCallback((id: string) => {
-    const habit = useHabitStore.getState().habits.find((h) => h.id === id);
     toggleHabit(id);
-    if (habit && !habit.completedToday) {
-      toast.success("Done");
-    }
   }, [toggleHabit]);
 
   const completedCount = useMemo(() => countCompleted(habits), [habits]);
