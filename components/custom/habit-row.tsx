@@ -58,7 +58,7 @@ function HabitRow({ habit, onToggle, onPress, onLongPress, handle, className }: 
           {habit.name}
         </Text>
         <View
-          className="flex-row items-center gap-1.5 mt-1"
+          className="flex-row items-center -ml-1 gap-1.5 mt-1"
           style={{ opacity: habit.completedToday ? 0.5 : 1 }}
         >
           <HabitTypeBadge repeatDays={habit.repeatDays} color={habit.color} />

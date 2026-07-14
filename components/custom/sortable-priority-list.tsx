@@ -11,7 +11,7 @@ import { useHabitStore } from "@/lib/store";
 import { HabitRow } from "@/components/custom/habit-row";
 import type { Habit } from "@/lib/types";
 
-const ITEM_HEIGHT = 72;
+const ITEM_HEIGHT = 76;
 
 interface SortablePriorityListProps {
   habits: Habit[];
@@ -51,10 +51,10 @@ export function SortablePriorityList({
             onToggle={onToggle}
             onPress={onPress}
             onLongPress={onLongPress}
-            className="h-[72px]"
+            className="h-[76px]"
             handle={
               <SortableItem.Handle>
-                <View className="items-center justify-center mr-2" style={{ width: 24, height: 40 }}>
+                <View className="items-center justify-center mr-1" style={{ width: 24, height: 40 }}>
                   <GripVertical size={14} color="#4A4B4C" strokeWidth={2.5} />
                 </View>
               </SortableItem.Handle>

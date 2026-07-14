@@ -68,10 +68,10 @@ export default function Index() {
               <View className="bg-bg-surface p-8 items-center justify-center">
                 <Hexagon size={48} color="#6A6B6C" strokeWidth={1.5} className="mb-4" />
                 <Text className="text-body-md text-text-muted text-center font-medium">
-                  No tasks scheduled for today.
+                  No priority tasks today
                 </Text>
                 <Text className="text-body-sm text-text-ash text-center mt-1 font-medium">
-                  Tap the + button to create a new habit!
+                  Mark a habit as priority to pin it here
                 </Text>
               </View>
             </View>
