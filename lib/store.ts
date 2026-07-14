@@ -7,11 +7,13 @@ export interface HabitState {
   habits: Habit[];
   logs: HabitLog[];
   achievements: Achievement[];
+  priorityOrder: string[];
   addHabit: (habit: Omit<Habit, "id" | "streak" | "bestStreak" | "completedToday" | "createdAt">) => void;
   toggleHabit: (id: string, dateStr?: string) => void;
   updateHabit: (id: string, updates: Partial<Omit<Habit, "id" | "createdAt">>) => void;
   deleteHabit: (id: string) => void;
   unlockAchievement: (id: string) => void;
+  reorderPriorities: (from: number, to: number) => void;
 }
 
 const DEFAULT_ACHIEVEMENTS: Achievement[] = [
@@ -58,6 +60,7 @@ export const useHabitStore = create<HabitState>()(
       habits: [],
       logs: [],
       achievements: DEFAULT_ACHIEVEMENTS,
+      priorityOrder: [],
 
       addHabit: (newHabit) => {
         const id = Math.random().toString(36).substring(2, 9);
@@ -135,6 +138,10 @@ export const useHabitStore = create<HabitState>()(
           habits: state.habits.map((h) =>
             h.id === id ? { ...h, ...updates, id: h.id, createdAt: h.createdAt } : h
           ),
+          priorityOrder:
+            updates.priority === false
+              ? state.priorityOrder.filter((pid) => pid !== id)
+              : state.priorityOrder,
         }));
       },
 
@@ -142,6 +149,7 @@ export const useHabitStore = create<HabitState>()(
         set((state) => ({
           habits: state.habits.filter((h) => h.id !== id),
           logs: state.logs.filter((l) => l.habitId !== id),
+          priorityOrder: state.priorityOrder.filter((pid) => pid !== id),
         }));
       },
 
@@ -153,6 +161,15 @@ export const useHabitStore = create<HabitState>()(
               : a
           ),
         }));
+      },
+
+      reorderPriorities: (from, to) => {
+        set((state) => {
+          const order = [...state.priorityOrder];
+          const [moved] = order.splice(from, 1);
+          order.splice(to, 0, moved);
+          return { priorityOrder: order };
+        });
       },
     }),
     {

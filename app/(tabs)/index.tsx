@@ -7,7 +7,7 @@ import { useHabitStore } from "@/lib/store";
 import { useUIStore } from "@/lib/ui-store";
 import { calculateGlobalStats } from "@/lib/derived/stats";
 import StreakHeroCard from "@/components/home/streak-hero-card";
-import { HabitRow } from "@/components/custom/habit-row";
+import { SortablePriorityList } from "@/components/custom/sortable-priority-list";
 import { HabitDetailSheet } from "@/components/custom/habit-detail-sheet";
 import { Hexagon } from "lucide-react-native";
 
@@ -56,18 +56,15 @@ export default function Index() {
             Priorities
           </Text>
           
-          <View className="rounded-2xl border border-border-hairline overflow-hidden">
-            {priorityHabits.length > 0 ? (
-              priorityHabits.map((habit) => (
-                <HabitRow
-                  key={habit.id}
-                  habit={habit}
-                  onToggle={handleToggle}
-                  onPress={(h) => setSelectedHabitId(h.id)}
-                  onLongPress={(h) => requestDelete(h.id)}
-                />
-              ))
-            ) : (
+          {priorityHabits.length > 0 ? (
+            <SortablePriorityList
+              habits={priorityHabits}
+              onToggle={handleToggle}
+              onPress={(h) => setSelectedHabitId(h.id)}
+              onLongPress={(h) => requestDelete(h.id)}
+            />
+          ) : (
+            <View className="rounded-2xl border border-border-hairline overflow-hidden">
               <View className="bg-bg-surface p-8 items-center justify-center">
                 <Hexagon size={48} color="#6A6B6C" strokeWidth={1.5} className="mb-4" />
                 <Text className="text-body-md text-text-muted text-center font-medium">
@@ -77,8 +74,8 @@ export default function Index() {
                   Tap the + button to create a new habit!
                 </Text>
               </View>
-            )}
-          </View>
+            </View>
+          )}
         </View>
       </ScrollView>
       <HabitDetailSheet habitId={selectedHabitId} onClose={() => setSelectedHabitId(null)} />

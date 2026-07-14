@@ -1,4 +1,4 @@
-import { CompletionToggle } from "@/components/custom/completion-toggle";
+import { Checkbox } from "@/components/ui/checkbox";
 import { StreakBadge } from "@/components/custom/streak-badge";
 import { HabitIcon } from "@/components/custom/habit-icon";
 import { HabitTypeBadge } from "@/components/custom/habit-type-badge";
@@ -14,10 +14,11 @@ type HabitRowProps = {
   onToggle: (id: string) => void;
   onPress?: (habit: Habit) => void;
   onLongPress?: (habit: Habit) => void;
+  handle?: React.ReactNode;
   className?: string;
 };
 
-function HabitRow({ habit, onToggle, onPress, onLongPress, className }: HabitRowProps) {
+function HabitRow({ habit, onToggle, onPress, onLongPress, handle, className }: HabitRowProps) {
   return (
     <Pressable
       onPress={() => onPress?.(habit)}
@@ -31,14 +32,14 @@ function HabitRow({ habit, onToggle, onPress, onLongPress, className }: HabitRow
       }
       delayLongPress={400}
       className={cn(
-        "flex-row items-center border-b border-border-hairline bg-bg-surface px-4 py-3 active:bg-bg-elevated",
-        habit.completedToday ? "opacity-70" : "",
+        "flex-row items-center border-b border-border-hairline bg-bg-surface px-4 py-3.5 active:bg-bg-elevated",
         className
       )}
     >
+      {handle}
       <View
-        style={{ backgroundColor: `${habit.color}15` }}
-        className="w-10 h-10 rounded-full items-center justify-center mr-3"
+        style={{ backgroundColor: `${habit.color}15`, opacity: habit.completedToday ? 0.4 : 1 }}
+        className="w-10 h-10 rounded-full items-center justify-center mr-2"
       >
         <HabitIcon
           name={habit.iconName}
@@ -47,7 +48,7 @@ function HabitRow({ habit, onToggle, onPress, onLongPress, className }: HabitRow
           strokeWidth={2.5}
         />
       </View>
-      <View className="flex-1">
+      <View className="flex-1 mr-2">
         <Text
           className={cn(
             "text-body-lg",
@@ -56,14 +57,17 @@ function HabitRow({ habit, onToggle, onPress, onLongPress, className }: HabitRow
         >
           {habit.name}
         </Text>
-        <View className="flex-row items-center gap-2 mt-1">
+        <View
+          className="flex-row items-center gap-1.5 mt-1"
+          style={{ opacity: habit.completedToday ? 0.5 : 1 }}
+        >
           <HabitTypeBadge repeatDays={habit.repeatDays} color={habit.color} />
           <View
-            style={{ backgroundColor: habit.color }}
-            className="px-2 py-0.5 rounded-md"
+            style={{ backgroundColor: `${habit.color}15`, borderColor: `${habit.color}40` }}
+            className="px-1.5 py-0.5 rounded-md border"
           >
             <Text
-              style={{ color: "#000000" }}
+              style={{ color: habit.color }}
               className="text-caption-sm font-bold"
             >
               {habit.frequency}×
@@ -74,10 +78,10 @@ function HabitRow({ habit, onToggle, onPress, onLongPress, className }: HabitRow
               <View
                 key={i}
                 style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: 3,
-                  backgroundColor: active ? habit.color : "#2a2a2c",
+                  width: 7,
+                  height: 7,
+                  borderRadius: 3.5,
+                  backgroundColor: active ? habit.color : "#333335",
                 }}
               />
             ))}
@@ -85,11 +89,17 @@ function HabitRow({ habit, onToggle, onPress, onLongPress, className }: HabitRow
         </View>
       </View>
       <StreakBadge streak={habit.streak} />
-      <CompletionToggle
-        completed={habit.completedToday}
-        onToggle={() => onToggle(habit.id)}
-        size={32}
-        className="ml-3"
+      <Checkbox
+        checked={habit.completedToday}
+        onCheckedChange={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onToggle(habit.id);
+        }}
+        className="h-8 w-8 rounded-full border-border-hairline ml-3"
+        checkedClassName="border-accent"
+        indicatorClassName="bg-accent rounded-full"
+        iconClassName="text-text-inverse"
+        iconSize={18}
       />
     </Pressable>
   );
