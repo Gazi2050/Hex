@@ -1,9 +1,13 @@
 import { useCallback, useMemo } from "react";
 import { useHabitStore } from "@/lib/store";
-import { countCompleted } from "@/lib/actions/habit-actions";
+import {
+  buildCompletedTodaySet,
+  countCompletedToday,
+} from "@/lib/actions/habit-actions";
 
 export function useHabits() {
   const habits = useHabitStore((state) => state.habits);
+  const logs = useHabitStore((state) => state.logs);
   const toggleHabit = useHabitStore((state) => state.toggleHabit);
   const priorityOrder = useHabitStore((state) => state.priorityOrder);
   const habitsOrder = useHabitStore((state) => state.habitsOrder);
@@ -12,7 +16,16 @@ export function useHabits() {
     toggleHabit(id);
   }, [toggleHabit]);
 
-  const completedCount = useMemo(() => countCompleted(habits), [habits]);
+  const completedTodaySet = useMemo(
+    () => buildCompletedTodaySet(logs),
+    [logs]
+  );
+
+  const completedCount = useMemo(
+    () => countCompletedToday(habits, logs),
+    [habits, logs]
+  );
+
   const sortedHabits = useMemo(() => {
     const ordered = [...habits].sort((a, b) => {
       const aIdx = habitsOrder.indexOf(a.id);
@@ -24,6 +37,7 @@ export function useHabits() {
     });
     return ordered;
   }, [habits, habitsOrder]);
+
   const priorityHabits = useMemo(() => {
     const priorities = habits.filter((h) => h.priority);
     const ordered = [...priorities].sort((a, b) => {
@@ -39,8 +53,10 @@ export function useHabits() {
 
   return {
     habits,
+    logs,
     sortedHabits,
     priorityHabits,
+    completedTodaySet,
     completedCount,
     handleToggle,
     totalCount: habits.length,

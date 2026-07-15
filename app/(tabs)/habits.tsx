@@ -20,7 +20,7 @@ const ITEM_HEIGHT = 76;
 
 export default function HabitsScreen() {
   const insets = useSafeAreaInsets();
-  const { sortedHabits, handleToggle } = useHabits();
+  const { sortedHabits, completedTodaySet, handleToggle } = useHabits();
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
   const requestDelete = useUIStore((s) => s.requestDelete);
   const reorderHabits = useHabitStore((s) => s.reorderHabits);
@@ -45,6 +45,7 @@ export default function HabitsScreen() {
         >
           <HabitRow
             habit={habit}
+            completedToday={completedTodaySet.has(habit.id)}
             onToggle={handleToggle}
             onPress={(h) => setSelectedHabitId(h.id)}
             onLongPress={(h) => requestDelete(h.id)}
@@ -60,7 +61,7 @@ export default function HabitsScreen() {
         </SortableItem>
       );
     },
-    [handleMove, handleToggle, requestDelete]
+    [handleMove, handleToggle, requestDelete, completedTodaySet]
   );
 
   return (

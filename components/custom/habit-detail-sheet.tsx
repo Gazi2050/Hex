@@ -14,7 +14,7 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
-import { useHabitStore } from "@/lib/store";
+import { useHabitStore, getLocalDateString } from "@/lib/store";
 import { useUIStore } from "@/lib/ui-store";
 import { calculateCurrentStreak, calculateBestStreak } from "@/lib/derived/stats";
 import { Text } from "@/components/ui/text";
@@ -151,7 +151,7 @@ export function HabitDetailSheet({ habitId, onClose }: HabitDetailSheetProps) {
                   <View className="items-end">
                     <HabitTimer
                       repeatDays={habit.repeatDays}
-                      completedToday={habit.completedToday}
+                      completedToday={completedSet.has(getLocalDateString())}
                       color={habit.color}
                     />
                   </View>

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { View } from "react-native";
 import {
   Sortable,
@@ -7,6 +7,7 @@ import {
 } from "react-native-reanimated-dnd";
 import { GripVertical } from "lucide-react-native";
 import { useHabitStore } from "@/lib/store";
+import { buildCompletedTodaySet } from "@/lib/actions/habit-actions";
 import { HabitRow } from "@/components/custom/habit-row";
 import type { Habit } from "@/lib/types";
 
@@ -26,6 +27,11 @@ export function SortablePriorityList({
   onLongPress,
 }: SortablePriorityListProps) {
   const reorderPriorities = useHabitStore((s) => s.reorderPriorities);
+  const logs = useHabitStore((s) => s.logs);
+  const completedTodaySet = useMemo(
+    () => buildCompletedTodaySet(logs),
+    [logs]
+  );
 
   const handleMove = useCallback(
     (_id: string, from: number, to: number) => {
@@ -47,6 +53,7 @@ export function SortablePriorityList({
         >
           <HabitRow
             habit={habit}
+            completedToday={completedTodaySet.has(habit.id)}
             onToggle={onToggle}
             onPress={onPress}
             onLongPress={onLongPress}
@@ -62,7 +69,7 @@ export function SortablePriorityList({
         </SortableItem>
       );
     },
-    [handleMove, onToggle, onPress, onLongPress]
+    [handleMove, onToggle, onPress, onLongPress, completedTodaySet]
   );
 
   return (

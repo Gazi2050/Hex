@@ -12,6 +12,7 @@ import { Pressable, View } from "react-native";
 
 type HabitRowProps = {
   habit: Habit;
+  completedToday: boolean;
   onToggle: (id: string) => void;
   onPress?: (habit: Habit) => void;
   onLongPress?: (habit: Habit) => void;
@@ -19,7 +20,7 @@ type HabitRowProps = {
   className?: string;
 };
 
-function HabitRow({ habit, onToggle, onPress, onLongPress, handle, className }: HabitRowProps) {
+function HabitRow({ habit, completedToday, onToggle, onPress, onLongPress, handle, className }: HabitRowProps) {
   const todayIndex = (new Date().getDay() + 6) % 7;
   const isScheduledToday = habit.repeatDays[todayIndex];
 
@@ -42,7 +43,7 @@ function HabitRow({ habit, onToggle, onPress, onLongPress, handle, className }: 
     >
       {handle}
       <View
-        style={{ backgroundColor: `${habit.color}15`, opacity: habit.completedToday ? 0.4 : 1 }}
+        style={{ backgroundColor: `${habit.color}15`, opacity: completedToday ? 0.4 : 1 }}
         className="w-10 h-10 rounded-full items-center justify-center mr-2"
       >
         <HabitIcon
@@ -57,7 +58,7 @@ function HabitRow({ habit, onToggle, onPress, onLongPress, handle, className }: 
           <Text
             className={cn(
               "text-body-lg",
-              habit.completedToday ? "line-through text-text-muted" : "text-text-primary"
+              completedToday ? "line-through text-text-muted" : "text-text-primary"
             )}
           >
             {habit.name}
@@ -70,7 +71,7 @@ function HabitRow({ habit, onToggle, onPress, onLongPress, handle, className }: 
         </View>
         <View
           className="flex-row items-center -ml-1 gap-1.5 mt-1"
-          style={{ opacity: habit.completedToday ? 0.5 : 1 }}
+          style={{ opacity: completedToday ? 0.5 : 1 }}
         >
           <HabitTypeBadge repeatDays={habit.repeatDays} color={habit.color} />
           <View
@@ -101,7 +102,7 @@ function HabitRow({ habit, onToggle, onPress, onLongPress, handle, className }: 
       </View>
       <StreakBadge streak={habit.streak} />
       <Checkbox
-        checked={habit.completedToday}
+        checked={completedToday}
         disabled={!isScheduledToday}
         onCheckedChange={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

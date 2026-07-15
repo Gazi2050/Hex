@@ -90,7 +90,9 @@ export function calculateGlobalStats(habits: Habit[], logs: HabitLog[]) {
   
   // Scheduled habits for today
   const scheduledToday = habits.filter((h) => h.repeatDays[dayOfWeek] && (h.createdAtDate ?? h.createdAt.slice(0, 10)) <= todayStr);
-  const completedTodayCount = scheduledToday.filter((h) => h.completedToday).length;
+  const completedTodayCount = scheduledToday.filter((h) =>
+    logs.some((l) => l.habitId === h.id && l.date === todayStr)
+  ).length;
 
   // Determine if a specific date was a "Perfect Day"
   const isPerfectDay = (date: Date): boolean => {
