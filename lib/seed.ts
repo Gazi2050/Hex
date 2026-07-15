@@ -150,6 +150,11 @@ export async function applyDemoData(): Promise<boolean> {
   const flag = await AsyncStorage.getItem(SEED_FLAG_KEY);
   if (flag === "1") return false;
 
+  if (useHabitStore.getState().habits.length > 0) {
+    await AsyncStorage.setItem(SEED_FLAG_KEY, "1");
+    return false;
+  }
+
   const data = generateDemoState();
   useHabitStore.setState(data);
   await AsyncStorage.setItem(SEED_FLAG_KEY, "1");

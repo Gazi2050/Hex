@@ -23,7 +23,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!__DEV__) return;
-    void applyDemoData();
+    void applyDemoData().catch(() => {});
   }, []);
 
   const handleFadeComplete = useCallback(() => {
