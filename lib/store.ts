@@ -9,7 +9,7 @@ export interface HabitState {
   achievements: Achievement[];
   priorityOrder: string[];
   habitsOrder: string[];
-  addHabit: (habit: Omit<Habit, "id" | "streak" | "bestStreak" | "completedToday" | "createdAt" | "createdAtDate">) => void;
+  addHabit: (habit: Omit<Habit, "id" | "streak" | "bestStreak" | "createdAt" | "createdAtDate">) => void;
   toggleHabit: (id: string, dateStr?: string) => void;
   updateHabit: (id: string, updates: Partial<Omit<Habit, "id" | "createdAt">>) => void;
   deleteHabit: (id: string) => void;
@@ -73,7 +73,6 @@ export const useHabitStore = create<HabitState>()(
           id,
           streak: 0,
           bestStreak: 0,
-          completedToday: false,
           createdAt: new Date().toISOString(),
           createdAtDate: getLocalDateString(),
         };
@@ -113,15 +112,6 @@ export const useHabitStore = create<HabitState>()(
             completed = true;
           }
 
-          const todayStr = getLocalDateString();
-          const nextHabits = state.habits.map((h) => {
-            if (h.id === habitId) {
-              const completedToday = finalDate === todayStr ? completed : h.completedToday;
-              return { ...h, completedToday };
-            }
-            return h;
-          });
-
           const totalCompleted = nextLogs.length;
           const achievements = state.achievements.map((a) => {
             if (a.id === "day_one" && totalCompleted >= 1 && !a.unlockedAt) {
@@ -133,7 +123,7 @@ export const useHabitStore = create<HabitState>()(
             return a;
           });
 
-          return { logs: nextLogs, habits: nextHabits, achievements };
+          return { logs: nextLogs, achievements };
         });
       },
 
@@ -194,6 +184,24 @@ export const useHabitStore = create<HabitState>()(
     {
       name: "hex-habit-storage",
       storage: createJSONStorage(() => safeStorage),
+      version: 2,
+      migrate: (persisted, version) => {
+        if (!persisted || typeof persisted !== "object") return persisted;
+        const state = persisted as {
+          habits?: Array<Record<string, unknown>>;
+          [k: string]: unknown;
+        };
+        if (version < 2 && Array.isArray(state.habits)) {
+          state.habits = state.habits.map((h) => {
+            if (h && typeof h === "object") {
+              const { completedToday: _drop, ...rest } = h;
+              return rest;
+            }
+            return h;
+          });
+        }
+        return state;
+      },
     }
   )
 );
