@@ -95,12 +95,10 @@ export const useHabitStore = create<HabitState>()(
             (l) => l.habitId === habitId && l.date === finalDate
           );
 
-          let nextLogs = [...state.logs];
-          let completed = false;
+          const nextLogs = [...state.logs];
 
           if (existingLogIndex >= 0) {
             nextLogs.splice(existingLogIndex, 1);
-            completed = false;
           } else {
             const newLog: HabitLog = {
               id: Math.random().toString(36).substring(2, 9),
@@ -109,7 +107,6 @@ export const useHabitStore = create<HabitState>()(
               timestamp: new Date().toISOString(),
             };
             nextLogs.push(newLog);
-            completed = true;
           }
 
           const totalCompleted = nextLogs.length;
