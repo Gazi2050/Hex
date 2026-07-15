@@ -152,22 +152,17 @@ export async function applyDemoData(): Promise<boolean> {
     console.log("[seed] hydration complete");
 
     const flag = await AsyncStorage.getItem(SEED_FLAG_KEY);
-    console.log("[seed] flag check: hex-demo-seeded =", JSON.stringify(flag));
-    if (flag === "1") {
-      console.log("[seed] SKIPPED: flag already set");
-      return false;
-    }
-
     const habitCount = useHabitStore.getState().habits.length;
+    console.log("[seed] flag check: hex-demo-seeded =", JSON.stringify(flag));
     console.log("[seed] habits in store:", habitCount);
-    if (habitCount > 0) {
-      await AsyncStorage.setItem(SEED_FLAG_KEY, "1");
-      console.log("[seed] SKIPPED: existing habits found, set flag to prevent future attempts");
+
+    if (flag === "1" && habitCount > 0) {
+      console.log("[seed] SKIPPED: already seeded with data");
       return false;
     }
 
-    console.log("[seed] generating demo data...");
     const data = generateDemoState();
+    console.log("[seed] generating demo data...");
     useHabitStore.setState(data);
     await AsyncStorage.setItem(SEED_FLAG_KEY, "1");
     console.log(
