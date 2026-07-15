@@ -1,6 +1,5 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { StreakBadge } from "@/components/custom/streak-badge";
 import { HabitIcon } from "@/components/custom/habit-icon";
 import { HabitTypeBadge } from "@/components/custom/habit-type-badge";
 import { Text } from "@/components/ui/text";
@@ -100,7 +99,6 @@ function HabitRow({ habit, completedToday, onToggle, onPress, onLongPress, handl
           </View>
         </View>
       </View>
-      <StreakBadge streak={habit.streak} />
       <Checkbox
         checked={completedToday}
         disabled={!isScheduledToday}

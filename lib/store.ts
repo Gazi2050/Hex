@@ -181,11 +181,14 @@ export const useHabitStore = create<HabitState>()(
     {
       name: "hex-habit-storage",
       storage: createJSONStorage(() => safeStorage),
-      version: 2,
+      version: 3,
       migrate: (persisted, version) => {
         if (!persisted || typeof persisted !== "object") return persisted;
         const state = persisted as {
           habits?: Array<Record<string, unknown>>;
+          logs?: Array<Record<string, unknown>>;
+          priorityOrder?: string[];
+          habitsOrder?: string[];
           [k: string]: unknown;
         };
         if (version < 2 && Array.isArray(state.habits)) {
@@ -197,7 +200,35 @@ export const useHabitStore = create<HabitState>()(
             return h;
           });
         }
+        if (version < 3) {
+          if (Array.isArray(state.habits)) {
+            state.habits = state.habits.filter(
+              (h) => !(typeof h?.id === "string" && h.id.startsWith("demo-"))
+            );
+          }
+          if (Array.isArray(state.logs)) {
+            state.logs = state.logs.filter(
+              (l) => !(typeof l?.habitId === "string" && l.habitId.startsWith("demo-"))
+            );
+          }
+          if (Array.isArray(state.priorityOrder)) {
+            state.priorityOrder = state.priorityOrder.filter(
+              (id) => !id.startsWith("demo-")
+            );
+          }
+          if (Array.isArray(state.habitsOrder)) {
+            state.habitsOrder = state.habitsOrder.filter(
+              (id) => !id.startsWith("demo-")
+            );
+          }
+        }
         return state;
+      },
+      onRehydrateStorage: () => {
+        return () => {
+          AsyncStorage.removeItem("hex-demo-seeded").catch(() => {});
+          AsyncStorage.removeItem("hex-demo-seeded-v2").catch(() => {});
+        };
       },
     }
   )
