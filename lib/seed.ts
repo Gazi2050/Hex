@@ -145,19 +145,42 @@ function waitHydrated(): Promise<void> {
 }
 
 export async function applyDemoData(): Promise<boolean> {
-  await waitHydrated();
+  try {
+    console.log("[seed] applyDemoData started");
 
-  const flag = await AsyncStorage.getItem(SEED_FLAG_KEY);
-  if (flag === "1") return false;
+    await waitHydrated();
+    console.log("[seed] hydration complete");
 
-  if (useHabitStore.getState().habits.length > 0) {
+    const flag = await AsyncStorage.getItem(SEED_FLAG_KEY);
+    console.log("[seed] flag check: hex-demo-seeded =", JSON.stringify(flag));
+    if (flag === "1") {
+      console.log("[seed] SKIPPED: flag already set");
+      return false;
+    }
+
+    const habitCount = useHabitStore.getState().habits.length;
+    console.log("[seed] habits in store:", habitCount);
+    if (habitCount > 0) {
+      await AsyncStorage.setItem(SEED_FLAG_KEY, "1");
+      console.log("[seed] SKIPPED: existing habits found, set flag to prevent future attempts");
+      return false;
+    }
+
+    console.log("[seed] generating demo data...");
+    const data = generateDemoState();
+    useHabitStore.setState(data);
     await AsyncStorage.setItem(SEED_FLAG_KEY, "1");
-    return false;
+    console.log(
+      "[seed] DONE: wrote",
+      data.habits.length,
+      "habits,",
+      data.logs.length,
+      "logs"
+    );
+
+    return true;
+  } catch (e) {
+    console.warn("[seed] ERROR:", e);
+    throw e;
   }
-
-  const data = generateDemoState();
-  useHabitStore.setState(data);
-  await AsyncStorage.setItem(SEED_FLAG_KEY, "1");
-
-  return true;
 }
