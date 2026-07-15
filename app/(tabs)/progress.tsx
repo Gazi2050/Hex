@@ -15,6 +15,7 @@ import { useHabitStore, getLocalDateString } from "@/lib/store";
 import { calculateGlobalStats } from "@/lib/derived/stats";
 import {
   calculateTotals,
+  calculatePeriodRate,
   dailyPercent,
 } from "@/lib/derived/progress-stats";
 import { WeeklyBarChart } from "@/components/progress/weekly-bar-chart";
@@ -28,13 +29,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react-native";
-
-function avgRate(values: (number | null)[]): number | null {
-  const valid = values.filter((v): v is number => v !== null);
-  return valid.length > 0
-    ? valid.reduce((a, b) => a + b, 0) / valid.length
-    : null;
-}
 
 export default function ProgressScreen() {
   const insets = useSafeAreaInsets();
@@ -66,49 +60,56 @@ export default function ProgressScreen() {
 
   const yearlyData = useMemo(() => {
     if (!deferred) return { months: [] as { month: string; rate: number | null; completed: number; scheduled: number; missed: number }[], rate: null as number | null, totalCompleted: 0, totalScheduled: 0, totalMissed: 0 };
-    const logSet = new Set(logs.map((l) => `${l.habitId}|${l.date}`));
     const now = new Date();
     const year = now.getFullYear() + yearOffset;
 
-    const allRates: (number | null)[] = [];
     let totalCompleted = 0;
     let totalScheduled = 0;
     let totalMissed = 0;
+    let yrSumPct = 0;
+    let yrValidDays = 0;
     const months: { month: string; rate: number | null; completed: number; scheduled: number; missed: number }[] = [];
 
     for (let m = 0; m < 12; m++) {
       const daysInMonth = new Date(year, m + 1, 0).getDate();
       const stopDay = yearOffset === 0 && m === now.getMonth() ? now.getDate() : daysInMonth;
 
-      const monthRates: (number | null)[] = [];
-      let monthCompleted = 0;
-      let monthScheduled = 0;
-      let monthMissed = 0;
+      const isFutureMonth = yearOffset === 0 && m > now.getMonth();
 
-      for (let day = 1; day <= stopDay; day++) {
-        const d = new Date(year, m, day);
-        const dp = dailyPercent(d, habits, logSet);
-        monthRates.push(dp.pct);
-        allRates.push(dp.pct);
-        monthCompleted += dp.completed;
-        monthScheduled += dp.scheduled;
-        monthMissed += dp.missed;
+      if (isFutureMonth) {
+        months.push({
+          month: new Date(year, m, 1).toLocaleDateString("en-US", { month: "short" }),
+          rate: null,
+          completed: 0,
+          scheduled: 0,
+          missed: 0,
+        });
+        continue;
       }
+
+      const monthStart = new Date(year, m, 1);
+      const monthEnd = new Date(year, m, stopDay + 1);
+
+      const mr = calculatePeriodRate(habits, logs, monthStart, monthEnd);
 
       months.push({
         month: new Date(year, m, 1).toLocaleDateString("en-US", { month: "short" }),
-        rate: avgRate(monthRates),
-        completed: monthCompleted,
-        scheduled: monthScheduled,
-        missed: monthMissed,
+        rate: mr.rate,
+        completed: mr.completed,
+        scheduled: mr.scheduled,
+        missed: mr.missed,
       });
 
-      totalCompleted += monthCompleted;
-      totalScheduled += monthScheduled;
-      totalMissed += monthMissed;
+      if (mr.validDays > 0 && mr.rate !== null) {
+        yrSumPct += mr.rate * mr.validDays;
+        yrValidDays += mr.validDays;
+      }
+      totalCompleted += mr.completed;
+      totalScheduled += mr.scheduled;
+      totalMissed += mr.missed;
     }
 
-    return { months, rate: avgRate(allRates), totalCompleted, totalScheduled, totalMissed };
+    return { months, rate: yrValidDays > 0 ? yrSumPct / yrValidDays : null, totalCompleted, totalScheduled, totalMissed };
   }, [deferred, habits, logs, yearOffset]);
 
   // ── Weekly data (offset-aware) ──────────────────────────────────────────
@@ -156,7 +157,6 @@ export default function ProgressScreen() {
   // ── Monthly data (offset-aware) ─────────────────────────────────────────
   const monthData = useMemo(() => {
     if (!deferred) return { rate: null, completed: 0, scheduled: 0, missed: 0, validDays: 0, firstDate: new Date(), lastDate: new Date() };
-    const logSet = new Set(logs.map((l) => `${l.habitId}|${l.date}`));
     const today = new Date();
     const base = new Date(today);
     base.setMonth(base.getMonth() + monthOffset);
@@ -167,26 +167,11 @@ export default function ProgressScreen() {
         ? Math.min(today.getDate(), daysInM)
         : daysInM;
 
-    const rates: (number | null)[] = [];
-    let totalCompleted = 0;
-    let totalScheduled = 0;
-    let totalMissed = 0;
-
-    for (let day = 1; day <= stopDay; day++) {
-      const d = new Date(base.getFullYear(), base.getMonth(), day);
-      const dp = dailyPercent(d, habits, logSet);
-      rates.push(dp.pct);
-      totalCompleted += dp.completed;
-      totalScheduled += dp.scheduled;
-      totalMissed += dp.missed;
-    }
+    const endDate = new Date(base.getFullYear(), base.getMonth(), stopDay + 1);
+    const result = calculatePeriodRate(habits, logs, firstOfMonth, endDate);
 
     return {
-      rate: avgRate(rates),
-      completed: totalCompleted,
-      scheduled: totalScheduled,
-      missed: totalMissed,
-      validDays: rates.filter((r) => r !== null).length,
+      ...result,
       firstDate: firstOfMonth,
       lastDate: new Date(base.getFullYear(), base.getMonth(), stopDay),
     };
@@ -307,7 +292,7 @@ export default function ProgressScreen() {
           style={{ fontSize: 11, color: "#6A6B6C" }}
         >
           {weekAvg !== null
-            ? `${Math.round(weekAvg * 100)}% avg · ${weekCompleted} completed · ${weekMissed} missed`
+            ? `${Math.round(weekAvg * 10000) / 100}% avg · ${weekCompleted} completed · ${weekMissed} missed`
             : "No data this week"}
         </Text>
       </View>
@@ -353,7 +338,7 @@ export default function ProgressScreen() {
             style={{ fontSize: 11, color: "#6A6B6C" }}
           >
             {monthData.rate !== null
-              ? `${Math.round(monthData.rate * 100)}% avg · ${monthData.completed} completed · ${monthData.missed} missed`
+              ? `${Math.round(monthData.rate * 10000) / 100}% avg · ${monthData.completed} completed · ${monthData.missed} missed`
               : "No data this month"}
           </Text>
         </View>
@@ -402,7 +387,7 @@ export default function ProgressScreen() {
           style={{ fontSize: 11, color: "#6A6B6C" }}
         >
           {yearlyData.rate !== null
-            ? `${Math.round(yearlyData.rate * 100)}% avg · ${yearlyData.totalCompleted} completed · ${yearlyData.totalMissed} missed`
+            ? `${Math.round(yearlyData.rate * 10000) / 100}% avg · ${yearlyData.totalCompleted} completed · ${yearlyData.totalMissed} missed`
             : "No data this year"}
         </Text>
       </View>

@@ -9,7 +9,7 @@ export interface HabitState {
   achievements: Achievement[];
   priorityOrder: string[];
   habitsOrder: string[];
-  addHabit: (habit: Omit<Habit, "id" | "streak" | "bestStreak" | "completedToday" | "createdAt">) => void;
+  addHabit: (habit: Omit<Habit, "id" | "streak" | "bestStreak" | "completedToday" | "createdAt" | "createdAtDate">) => void;
   toggleHabit: (id: string, dateStr?: string) => void;
   updateHabit: (id: string, updates: Partial<Omit<Habit, "id" | "createdAt">>) => void;
   deleteHabit: (id: string) => void;
@@ -75,6 +75,7 @@ export const useHabitStore = create<HabitState>()(
           bestStreak: 0,
           completedToday: false,
           createdAt: new Date().toISOString(),
+          createdAtDate: getLocalDateString(),
         };
         set((state) => {
           const nextHabits = [...state.habits, habit];

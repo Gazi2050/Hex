@@ -19,28 +19,23 @@ const STROKE_COLOR = "#59D499";
 const CHART_HEIGHT = 100;
 const LABEL_COLOR = "#6A6B6C";
 
-const pointXs = (chartWidth: number): number[] => {
+const pointXs = (chartWidth: number, count: number): number[] => {
   "worklet";
-  const colW = chartWidth / 12;
+  const colW = chartWidth / count;
   const startX = colW / 2;
   const endX = chartWidth - colW / 2;
-  const stepX = (endX - startX) / 11;
-  return Array.from({ length: 12 }, (_, i) => startX + i * stepX);
+  const stepX = count > 1 ? (endX - startX) / (count - 1) : 0;
+  return Array.from({ length: count }, (_, i) => startX + i * stepX);
 };
 
 const buildFromYs = (ys: readonly number[], chartWidth: number) => {
   "worklet";
-  const xs = pointXs(chartWidth);
+  const xs = pointXs(chartWidth, ys.length);
   if (ys.length < 2) return { linePath: "", areaPath: "" };
 
   let lp = `M ${xs[0]},${ys[0]}`;
   for (let i = 0; i < ys.length - 1; i++) {
-    const midX = (xs[i] + xs[i + 1]) / 2;
-    const midY = (ys[i] + ys[i + 1]) / 2;
-    const cp1x = (midX + xs[i]) / 2;
-    const cp2x = (midX + xs[i + 1]) / 2;
-    lp += ` Q ${cp1x},${ys[i]} ${midX},${midY}`;
-    lp += ` Q ${cp2x},${ys[i + 1]} ${xs[i + 1]},${ys[i + 1]}`;
+    lp += ` L ${xs[i + 1]},${ys[i + 1]}`;
   }
 
   const ap =
@@ -53,13 +48,8 @@ const buildFromYs = (ys: readonly number[], chartWidth: number) => {
 
 function pointYs(data: { month: string; rate: number | null }[], chartWidth: number): number[] {
   if (data.length === 0) return [];
-  const maxVal = Math.max(...data.map((d) => d.rate ?? 0), 0.01);
-  const colW = chartWidth / data.length;
-  const startX = colW / 2;
-  const endX = chartWidth - colW / 2;
-  const stepX = (endX - startX) / (data.length - 1);
-  return data.map((d, i) => {
-    const y = CHART_HEIGHT - ((d.rate ?? 0) / maxVal) * (CHART_HEIGHT - 10) - 5;
+  return data.map((d) => {
+    const y = CHART_HEIGHT - 5 - (d.rate ?? 0) * (CHART_HEIGHT - 15);
     return y;
   });
 }
@@ -94,20 +84,21 @@ export function YearlyAreaChart({ data, width }: YearlyAreaChartProps) {
   const chartWidth = width;
   const targetYs = useMemo(() => pointYs(data, chartWidth), [data, chartWidth]);
   const ys = useMonthYSvs(targetYs);
+  const n = data.length;
 
   const lineAnimatedProps = useAnimatedProps(() => {
-    const yvals = ys.map((sv) => sv.value);
+    const yvals = ys.slice(0, n).map((sv) => sv.value);
     const paths = buildFromYs(yvals, chartWidth);
     return { d: paths.linePath };
   });
 
   const areaAnimatedProps = useAnimatedProps(() => {
-    const yvals = ys.map((sv) => sv.value);
+    const yvals = ys.slice(0, n).map((sv) => sv.value);
     const paths = buildFromYs(yvals, chartWidth);
     return { d: paths.areaPath };
   });
 
-  if (data.length === 0) return null;
+  if (n === 0) return null;
 
   return (
     <View style={{ width: chartWidth, height: CHART_HEIGHT + 10 }}>

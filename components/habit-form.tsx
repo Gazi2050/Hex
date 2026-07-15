@@ -69,7 +69,11 @@ const PRESET_COLORS = [
   "#F4F4F6",
 ];
 
-const DAYS_OF_WEEK = ["M", "T", "W", "T", "F", "S", "S"];
+const DAYS_OF_WEEK = ["S", "M", "T", "W", "T", "F", "S"];
+
+function displayIdxToStorage(displayIdx: number): number {
+  return displayIdx === 0 ? 6 : displayIdx - 1;
+}
 
 export function HabitForm({
   initialValues,
@@ -311,11 +315,12 @@ export function HabitForm({
           </Text>
           <View className="flex-row justify-between">
             {DAYS_OF_WEEK.map((day, idx) => {
-              const isSelected = repeatDays[idx];
+              const storeIdx = displayIdxToStorage(idx);
+              const isSelected = repeatDays[storeIdx];
               return (
                 <Pressable
                   key={idx}
-                  onPress={() => toggleDay(idx)}
+                  onPress={() => toggleDay(storeIdx)}
                   style={{
                     backgroundColor: isSelected ? selectedColor : "#131313",
                     borderColor: "#242728",

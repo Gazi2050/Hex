@@ -86,10 +86,10 @@ export function calculateBestStreak(habitId: string, logs: HabitLog[]): number {
 export function calculateGlobalStats(habits: Habit[], logs: HabitLog[]) {
   const today = new Date();
   const todayStr = getLocalDateString(today);
-  const dayOfWeek = (today.getDay() + 6) % 7; // Monday is 0, Sunday is 6
+  const dayOfWeek = (today.getDay() + 6) % 7; // Monday is 0
   
   // Scheduled habits for today
-  const scheduledToday = habits.filter((h) => h.repeatDays[dayOfWeek] && h.createdAt.slice(0, 10) <= todayStr);
+  const scheduledToday = habits.filter((h) => h.repeatDays[dayOfWeek] && (h.createdAtDate ?? h.createdAt.slice(0, 10)) <= todayStr);
   const completedTodayCount = scheduledToday.filter((h) => h.completedToday).length;
 
   // Determine if a specific date was a "Perfect Day"
@@ -98,7 +98,7 @@ export function calculateGlobalStats(habits: Habit[], logs: HabitLog[]) {
     const dayOfWk = (date.getDay() + 6) % 7;
     
     const scheduled = habits.filter((h) => 
-      h.repeatDays[dayOfWk] && h.createdAt.slice(0, 10) <= dateStr
+      h.repeatDays[dayOfWk] && (h.createdAtDate ?? h.createdAt.slice(0, 10)) <= dateStr
     );
     
     // If nothing was scheduled, it's considered a pass (perfect) as long as it's not before the user started

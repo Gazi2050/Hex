@@ -1,4 +1,5 @@
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { StreakBadge } from "@/components/custom/streak-badge";
 import { HabitIcon } from "@/components/custom/habit-icon";
 import { HabitTypeBadge } from "@/components/custom/habit-type-badge";
@@ -19,6 +20,9 @@ type HabitRowProps = {
 };
 
 function HabitRow({ habit, onToggle, onPress, onLongPress, handle, className }: HabitRowProps) {
+  const todayIndex = (new Date().getDay() + 6) % 7;
+  const isScheduledToday = habit.repeatDays[todayIndex];
+
   return (
     <Pressable
       onPress={() => onPress?.(habit)}
@@ -49,14 +53,21 @@ function HabitRow({ habit, onToggle, onPress, onLongPress, handle, className }: 
         />
       </View>
       <View className="flex-1 mr-2">
-        <Text
-          className={cn(
-            "text-body-lg",
-            habit.completedToday ? "line-through text-text-muted" : "text-text-primary"
+        <View className="flex-row items-center gap-1.5">
+          <Text
+            className={cn(
+              "text-body-lg",
+              habit.completedToday ? "line-through text-text-muted" : "text-text-primary"
+            )}
+          >
+            {habit.name}
+          </Text>
+          {!isScheduledToday && (
+            <Badge variant="secondary" className="px-1 py-0">
+              <Text style={{ fontSize: 8 }}>Not today</Text>
+            </Badge>
           )}
-        >
-          {habit.name}
-        </Text>
+        </View>
         <View
           className="flex-row items-center -ml-1 gap-1.5 mt-1"
           style={{ opacity: habit.completedToday ? 0.5 : 1 }}
@@ -74,14 +85,14 @@ function HabitRow({ habit, onToggle, onPress, onLongPress, handle, className }: 
             </Text>
           </View>
           <View className="flex-row items-center gap-1">
-            {habit.repeatDays.map((active, i) => (
+            {[6, 0, 1, 2, 3, 4, 5].map((storeIdx, i) => (
               <View
                 key={i}
                 style={{
                   width: 7,
                   height: 7,
                   borderRadius: 3.5,
-                  backgroundColor: active ? habit.color : "#333335",
+                  backgroundColor: habit.repeatDays[storeIdx] ? habit.color : "#333335",
                 }}
               />
             ))}
@@ -91,6 +102,7 @@ function HabitRow({ habit, onToggle, onPress, onLongPress, handle, className }: 
       <StreakBadge streak={habit.streak} />
       <Checkbox
         checked={habit.completedToday}
+        disabled={!isScheduledToday}
         onCheckedChange={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           onToggle(habit.id);

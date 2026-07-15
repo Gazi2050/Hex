@@ -22,13 +22,14 @@ import { Flame, Trophy, Pencil } from "lucide-react-native";
 import { MiniCubeHeatmap } from "@/components/custom/mini-cube-heatmap";
 import { HabitIcon } from "@/components/custom/habit-icon";
 import { HabitTypeBadge } from "@/components/custom/habit-type-badge";
+import { HabitTimer } from "@/components/custom/habit-timer";
 
 interface HabitDetailSheetProps {
   habitId: string | null;
   onClose: () => void;
 }
 
-const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
+const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 const DISMISS_DISTANCE = 100;
 const DISMISS_VELOCITY = 800;
@@ -147,6 +148,13 @@ export function HabitDetailSheet({ habitId, onClose }: HabitDetailSheetProps) {
                       <HabitTypeBadge repeatDays={habit.repeatDays} color={habit.color} />
                     </View>
                   </View>
+                  <View className="items-end">
+                    <HabitTimer
+                      repeatDays={habit.repeatDays}
+                      completedToday={habit.completedToday}
+                      color={habit.color}
+                    />
+                  </View>
                 </View>
 
                 <View className="flex-row gap-3 mb-6">
@@ -172,7 +180,8 @@ export function HabitDetailSheet({ habitId, onClose }: HabitDetailSheetProps) {
                   </Text>
                   <View className="flex-row justify-between">
                     {DAY_LABELS.map((label, idx) => {
-                      const active = habit.repeatDays[idx];
+                      const storeIdx = idx === 0 ? 6 : idx - 1;
+                      const active = habit.repeatDays[storeIdx];
                       return (
                         <View key={idx} className="items-center">
                           <View

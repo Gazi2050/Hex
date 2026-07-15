@@ -31,7 +31,7 @@ export function MiniCubeHeatmap({
   const columns = useMemo(() => {
     const today = new Date();
     const todayStr = getLocalDateString(today);
-    const dayOfWeek = (today.getDay() + 6) % 7;
+    const dayOfWeek = (today.getDay() + 6) % 7; // Monday is 0
     const thisMonday = new Date(today);
     thisMonday.setDate(today.getDate() - dayOfWeek);
     const startMonday = new Date(thisMonday);

@@ -13,6 +13,7 @@ export type Habit = {
   bestStreak: number;
   completedToday: boolean;
   createdAt: string; // ISO string
+  createdAtDate?: string; // YYYY-MM-DD in user's local timezone
 };
 
 export type HabitLog = {
