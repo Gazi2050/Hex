@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import LoadingScreen from "./loading";
 import { HabitFormSheet } from "@/components/custom/habit-form-sheet";
 import { DeleteHabitDialog } from "@/components/custom/delete-habit-dialog";
+import { applyDemoData } from "@/lib/seed";
 import "./global.css";
 
 type LoadState = "loading" | "fading" | "done";
@@ -18,6 +19,11 @@ export default function RootLayout() {
   useEffect(() => {
     const timer = setTimeout(() => setLoadState("fading"), 2200);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!__DEV__) return;
+    void applyDemoData();
   }, []);
 
   const handleFadeComplete = useCallback(() => {
