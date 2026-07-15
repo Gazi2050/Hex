@@ -42,8 +42,8 @@ export function HabitDetailSheet({ habitId, onClose }: HabitDetailSheetProps) {
   const habit = habits.find((h) => h.id === habitId);
   const visible = !!habit;
 
-  const currentStreak = habit ? calculateCurrentStreak(habit.id, logs) : 0;
-  const bestStreak = habit ? calculateBestStreak(habit.id, logs) : 0;
+  const currentStreak = habit ? calculateCurrentStreak(habit, logs) : 0;
+  const bestStreak = habit ? calculateBestStreak(habit, logs) : 0;
 
   const chartWidth = useMemo(() => windowWidth - 48, [windowWidth]);
 

@@ -1,82 +1,67 @@
 import type { Habit, HabitLog } from "../types";
 import { getLocalDateString } from "../store";
 
-// Calculate current streak for a single habit based on calendar dates
-export function calculateCurrentStreak(habitId: string, logs: HabitLog[]): number {
-  const habitLogs = logs.filter((l) => l.habitId === habitId);
-  if (habitLogs.length === 0) return 0;
+export function calculateCurrentStreak(habit: Habit, logs: HabitLog[]): number {
+  const dates = new Set(logs.filter((l) => l.habitId === habit.id).map((l) => l.date));
+  if (dates.size === 0) return 0;
 
-  const dates = new Set(habitLogs.map((l) => l.date));
-  let currentStreak = 0;
-  const today = new Date();
+  const createdAtDate = habit.createdAtDate ?? habit.createdAt.slice(0, 10);
+  const todayStr = getLocalDateString(new Date());
 
-  // If completed today, start counting from today
-  // If not completed today, check yesterday. If completed yesterday, start from yesterday. If not, streak is 0.
-  let checkDate = new Date(today);
-  let checkStr = getLocalDateString(checkDate);
+  let streak = 0;
+  const checkDate = new Date();
 
-  if (dates.has(checkStr)) {
-    currentStreak++;
-  } else {
-    // Check yesterday
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = getLocalDateString(yesterday);
-    if (dates.has(yesterdayStr)) {
-      checkDate = yesterday;
-      currentStreak++;
-    } else {
-      return 0;
-    }
-  }
-
-  // Count backwards day-by-day
   while (true) {
-    checkDate.setDate(checkDate.getDate() - 1);
-    const prevStr = getLocalDateString(checkDate);
-    if (dates.has(prevStr)) {
-      currentStreak++;
+    const checkStr = getLocalDateString(checkDate);
+
+    if (checkStr < createdAtDate) break;
+
+    const dayOfWeek = (checkDate.getDay() + 6) % 7;
+    const isScheduled = habit.repeatDays[dayOfWeek];
+
+    if (!isScheduled) {
+      // Non-scheduled day — skip, don't affect streak
+    } else if (dates.has(checkStr)) {
+      streak++;
+    } else if (checkStr === todayStr) {
+      // Today still in progress — skip, don't break
     } else {
+      // Past scheduled day missed — streak broken
       break;
     }
+
+    checkDate.setDate(checkDate.getDate() - 1);
   }
 
-  return currentStreak;
+  return streak;
 }
 
-// Calculate best streak historically for a single habit
-export function calculateBestStreak(habitId: string, logs: HabitLog[]): number {
-  const habitLogs = logs.filter((l) => l.habitId === habitId);
-  if (habitLogs.length === 0) return 0;
+export function calculateBestStreak(habit: Habit, logs: HabitLog[]): number {
+  const dates = new Set(logs.filter((l) => l.habitId === habit.id).map((l) => l.date));
+  if (dates.size === 0) return 0;
 
-  // Sort unique dates ascending
-  const sortedDates = Array.from(new Set(habitLogs.map((l) => l.date))).sort(
-    (a, b) => new Date(a).getTime() - new Date(b).getTime()
-  );
+  const createdAtDate = habit.createdAtDate ?? habit.createdAt.slice(0, 10);
+  const todayStr = getLocalDateString(new Date());
 
-  if (sortedDates.length === 0) return 0;
+  let bestStreak = 0;
+  let currentRun = 0;
 
-  let bestStreak = 1;
-  let currentRun = 1;
+  const start = new Date(createdAtDate + "T00:00:00");
+  const end = new Date(todayStr + "T00:00:00");
 
-  for (let i = 1; i < sortedDates.length; i++) {
-    const prev = new Date(sortedDates[i - 1]);
-    const curr = new Date(sortedDates[i]);
-    const diffTime = Math.abs(curr.getTime() - prev.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const dateStr = getLocalDateString(d);
+    const dayOfWeek = (d.getDay() + 6) % 7;
+    const isScheduled = habit.repeatDays[dayOfWeek];
 
-    if (diffDays === 1) {
+    if (!isScheduled) continue;
+
+    if (dates.has(dateStr)) {
       currentRun++;
-    } else if (diffDays > 1) {
-      if (currentRun > bestStreak) {
-        bestStreak = currentRun;
-      }
-      currentRun = 1;
+      if (currentRun > bestStreak) bestStreak = currentRun;
+    } else {
+      currentRun = 0;
     }
-  }
-
-  if (currentRun > bestStreak) {
-    bestStreak = currentRun;
   }
 
   return bestStreak;
@@ -113,8 +98,11 @@ export function calculateGlobalStats(habits: Habit[], logs: HabitLog[]) {
     return completed.length === scheduled.length;
   };
 
-  const firstHabitDateStr = habits.length > 0 
-    ? habits.reduce((min, h) => (h.createdAt < min ? h.createdAt : min), habits[0].createdAt).slice(0, 10)
+  const firstHabitDateStr = habits.length > 0
+    ? habits.reduce((min, h) => {
+        const d = h.createdAtDate ?? h.createdAt.slice(0, 10);
+        return d < min ? d : min;
+      }, habits[0].createdAtDate ?? habits[0].createdAt.slice(0, 10))
     : todayStr;
 
   let globalStreak = 0;
