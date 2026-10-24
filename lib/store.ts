@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Habit, HabitLog, Achievement } from "./types";
+import { mergeOrder, orderFromPositions } from "./order";
 
 export interface HabitState {
   habits: Habit[];
@@ -14,8 +15,8 @@ export interface HabitState {
   updateHabit: (id: string, updates: Partial<Omit<Habit, "id" | "createdAt">>) => void;
   deleteHabit: (id: string) => void;
   unlockAchievement: (id: string) => void;
-  reorderPriorities: (from: number, to: number) => void;
-  reorderHabits: (from: number, to: number) => void;
+  applyHabitsOrder: (positions: Record<string, number>) => void;
+  applyPriorityOrder: (positions: Record<string, number>) => void;
 }
 
 const DEFAULT_ACHIEVEMENTS: Achievement[] = [
@@ -30,6 +31,17 @@ export const getLocalDateString = (d = new Date()): string => {
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+};
+
+const reconcileOrder = (order: string[] | undefined, ids: string[]): string[] => {
+  const valid = (Array.isArray(order) ? order : []).filter(
+    (id) => typeof id === "string" && ids.includes(id)
+  );
+  const next = [...new Set(valid)];
+  for (const id of ids) {
+    if (!next.includes(id)) next.push(id);
+  }
+  return next;
 };
 
 const safeStorage = {
@@ -56,20 +68,58 @@ const safeStorage = {
   },
 };
 
+export const MAX_HABITS = 8;
+
+const seedNow = new Date().toISOString();
+const seedToday = getLocalDateString();
+const seedHabit = (
+  id: string,
+  name: string,
+  iconName: string,
+  color: string,
+  frequency: number,
+  priority = false
+): Habit => ({
+  id,
+  name,
+  iconName,
+  color,
+  repeatDays: [true, true, true, true, true, true, true],
+  frequency,
+  priority,
+  description: "",
+  reminder: false,
+  streak: 0,
+  bestStreak: 0,
+  createdAt: seedNow,
+  createdAtDate: seedToday,
+});
+
+const SEED_HABITS: Habit[] = [
+  seedHabit("seed-1", "Morning Workout", "Dumbbell", "#F97316", 6, true),
+  seedHabit("seed-2", "Read 20 Pages", "BookOpen", "#A78BFA", 7),
+  seedHabit("seed-3", "Drink Water", "GlassWater", "#38BDF8", 7),
+  seedHabit("seed-4", "Meditate", "Brain", "#34D399", 5, true),
+  seedHabit("seed-5", "Sleep by 11", "Moon", "#FACC15", 7),
+];
+const SEED_HABITS_ORDER = SEED_HABITS.map((h) => h.id);
+const SEED_PRIORITY_ORDER = SEED_HABITS.filter((h) => h.priority).map((h) => h.id);
+
 export const useHabitStore = create<HabitState>()(
   persist(
-    (set) => ({
-      habits: [],
+    (set, get) => ({
+      habits: SEED_HABITS,
       logs: [],
       achievements: DEFAULT_ACHIEVEMENTS,
-      priorityOrder: [],
-      habitsOrder: [],
+      priorityOrder: SEED_PRIORITY_ORDER,
+      habitsOrder: SEED_HABITS_ORDER,
 
       addHabit: (newHabit) => {
+        if (get().habits.length >= MAX_HABITS) return;
         const id = Math.random().toString(36).substring(2, 9);
         const habit: Habit = {
-          priority: false,
           ...newHabit,
+          priority: newHabit.priority ?? false,
           id,
           streak: 0,
           bestStreak: 0,
@@ -84,7 +134,14 @@ export const useHabitStore = create<HabitState>()(
             }
             return a;
           });
-          return { habits: nextHabits, achievements, habitsOrder: [...state.habitsOrder, id] };
+          return {
+            habits: nextHabits,
+            achievements,
+            habitsOrder: [...state.habitsOrder, id],
+            priorityOrder: habit.priority
+              ? [...state.priorityOrder, id]
+              : state.priorityOrder,
+          };
         });
       },
 
@@ -125,15 +182,25 @@ export const useHabitStore = create<HabitState>()(
       },
 
       updateHabit: (id, updates) => {
-        set((state) => ({
-          habits: state.habits.map((h) =>
-            h.id === id ? { ...h, ...updates, id: h.id, createdAt: h.createdAt } : h
-          ),
-          priorityOrder:
-            updates.priority === false
-              ? state.priorityOrder.filter((pid) => pid !== id)
-              : state.priorityOrder,
-        }));
+        set((state) => {
+          const current = state.habits.find((h) => h.id === id);
+          const wasPriority = current?.priority ?? false;
+          const willBePriority = updates.priority ?? wasPriority;
+
+          let priorityOrder = state.priorityOrder;
+          if (!wasPriority && willBePriority) {
+            priorityOrder = [...priorityOrder.filter((pid) => pid !== id), id];
+          } else if (wasPriority && !willBePriority) {
+            priorityOrder = priorityOrder.filter((pid) => pid !== id);
+          }
+
+          return {
+            habits: state.habits.map((h) =>
+              h.id === id ? { ...h, ...updates, id: h.id, createdAt: h.createdAt } : h
+            ),
+            priorityOrder,
+          };
+        });
       },
 
       deleteHabit: (id) => {
@@ -155,33 +222,40 @@ export const useHabitStore = create<HabitState>()(
         }));
       },
 
-      reorderPriorities: (from, to) => {
+      applyHabitsOrder: (positions) => {
         set((state) => {
-          const order = [...state.priorityOrder];
-          const [moved] = order.splice(from, 1);
-          order.splice(to, 0, moved);
-          return { priorityOrder: order };
+          const habitIds = state.habits.map((h) => h.id);
+          const ordered = orderFromPositions(positions);
+          const order = mergeOrder(ordered, state.habitsOrder).filter((id) =>
+            habitIds.includes(id)
+          );
+          for (const id of habitIds) {
+            if (!order.includes(id)) order.push(id);
+          }
+          return { habitsOrder: order };
         });
       },
 
-      reorderHabits: (from, to) => {
+      applyPriorityOrder: (positions) => {
         set((state) => {
-          const order = [...state.habitsOrder];
-          for (const habit of state.habits) {
-            if (!order.includes(habit.id)) {
-              order.push(habit.id);
-            }
+          const priorityIds = state.habits
+            .filter((h) => h.priority)
+            .map((h) => h.id);
+          const ordered = orderFromPositions(positions);
+          const order = mergeOrder(ordered, state.priorityOrder);
+          for (const id of priorityIds) {
+            if (!order.includes(id)) order.push(id);
           }
-          const [moved] = order.splice(from, 1);
-          order.splice(to, 0, moved);
-          return { habitsOrder: order };
+          return {
+            priorityOrder: order.filter((id) => priorityIds.includes(id)),
+          };
         });
       },
     }),
     {
       name: "hex-habit-storage",
       storage: createJSONStorage(() => safeStorage),
-      version: 3,
+      version: 5,
       migrate: (persisted, version) => {
         if (!persisted || typeof persisted !== "object") return persisted;
         const state = persisted as {
@@ -219,6 +293,44 @@ export const useHabitStore = create<HabitState>()(
           if (Array.isArray(state.habitsOrder)) {
             state.habitsOrder = state.habitsOrder.filter(
               (id) => !id.startsWith("demo-")
+            );
+          }
+        }
+        if (version < 4) {
+          const habitIds = Array.isArray(state.habits)
+            ? state.habits
+                .map((h) => h?.id)
+                .filter((id): id is string => typeof id === "string")
+            : [];
+          const priorityIds = Array.isArray(state.habits)
+            ? state.habits
+                .filter((h) => !!h?.priority)
+                .map((h) => h?.id)
+                .filter((id): id is string => typeof id === "string")
+            : [];
+          state.habitsOrder = reconcileOrder(state.habitsOrder, habitIds);
+          state.priorityOrder = reconcileOrder(state.priorityOrder, priorityIds);
+        }
+        if (version < 5) {
+          // Cap at MAX_HABITS: keep the first 8 in display order, drop the rest.
+          const order = Array.isArray(state.habitsOrder)
+            ? state.habitsOrder.filter((id): id is string => typeof id === "string")
+            : [];
+          const keep = new Set(order.slice(0, 8));
+          if (Array.isArray(state.habits)) {
+            state.habits = state.habits.filter(
+              (h) => typeof h?.id === "string" && keep.has(h.id)
+            );
+          }
+          if (Array.isArray(state.logs)) {
+            state.logs = state.logs.filter(
+              (l) => typeof l?.habitId === "string" && keep.has(l.habitId)
+            );
+          }
+          state.habitsOrder = order.slice(0, 8);
+          if (Array.isArray(state.priorityOrder)) {
+            state.priorityOrder = state.priorityOrder.filter(
+              (id) => typeof id === "string" && keep.has(id)
             );
           }
         }

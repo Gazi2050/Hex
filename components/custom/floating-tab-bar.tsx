@@ -16,6 +16,7 @@ import { Home, ListTodo, LineChart, Settings2, Plus } from "lucide-react-native"
 import { Text } from "@/components/ui/text";
 import * as Haptics from "expo-haptics";
 import { useUIStore } from "@/lib/ui-store";
+import { useHabitStore, MAX_HABITS } from "@/lib/store";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -151,6 +152,8 @@ export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
   const { width: screenWidth } = useWindowDimensions();
   const isFirstRender = useRef(true);
   const openCreate = useUIStore((s) => s.openCreate);
+  const habitsCount = useHabitStore((s) => s.habits.length);
+  const atCap = habitsCount >= MAX_HABITS;
 
   const barWidth  = screenWidth - BAR_MARGIN;
   const totalSlots = state.routes.length + 1; // 4 routes + 1 center action
@@ -174,6 +177,11 @@ export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
 
   const handlePlusPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (atCap) {
+      setToastLabel(`Max ${MAX_HABITS} habits reached`);
+      setToastKey((k) => k + 1);
+      return;
+    }
     openCreate();
   };
 
@@ -346,6 +354,7 @@ export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
                 alignItems: "center",
                 justifyContent: "center",
                 zIndex: 20,
+                opacity: atCap ? 0.4 : 1,
               },
             ]}
           >

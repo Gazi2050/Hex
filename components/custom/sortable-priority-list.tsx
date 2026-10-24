@@ -26,18 +26,18 @@ export function SortablePriorityList({
   onPress,
   onLongPress,
 }: SortablePriorityListProps) {
-  const reorderPriorities = useHabitStore((s) => s.reorderPriorities);
+  const applyPriorityOrder = useHabitStore((s) => s.applyPriorityOrder);
   const logs = useHabitStore((s) => s.logs);
   const completedTodaySet = useMemo(
     () => buildCompletedTodaySet(logs),
     [logs]
   );
 
-  const handleMove = useCallback(
-    (_id: string, from: number, to: number) => {
-      reorderPriorities(from, to);
+  const handleDrop = useCallback(
+    (_id: string, _position: number, allPositions?: Record<string, number>) => {
+      if (allPositions) applyPriorityOrder(allPositions);
     },
-    [reorderPriorities]
+    [applyPriorityOrder]
   );
 
   const renderItem = useCallback(
@@ -49,7 +49,8 @@ export function SortablePriorityList({
           id={id}
           data={habit}
           {...sortableProps}
-          onMove={handleMove}
+          onDrop={handleDrop}
+          containerHeight={habits.length * ITEM_HEIGHT}
         >
           <HabitRow
             habit={habit}
@@ -69,7 +70,7 @@ export function SortablePriorityList({
         </SortableItem>
       );
     },
-    [handleMove, onToggle, onPress, onLongPress, completedTodaySet]
+    [handleDrop, onToggle, onPress, onLongPress, completedTodaySet, habits.length]
   );
 
   return (

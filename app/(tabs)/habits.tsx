@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { ScrollView, View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { View } from "react-native";
 import {
   Sortable,
   SortableItem,
@@ -16,20 +15,21 @@ import { HabitRow } from "@/components/custom/habit-row";
 import { HabitDetailSheet } from "@/components/custom/habit-detail-sheet";
 import type { Habit } from "@/lib/types";
 
-const ITEM_HEIGHT = 76;
+const ITEM_HEIGHT = 72;
 
 export default function HabitsScreen() {
   const insets = useSafeAreaInsets();
   const { sortedHabits, completedTodaySet, handleToggle } = useHabits();
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
+  const [listHeight, setListHeight] = useState(0);
   const requestDelete = useUIStore((s) => s.requestDelete);
-  const reorderHabits = useHabitStore((s) => s.reorderHabits);
+  const applyHabitsOrder = useHabitStore((s) => s.applyHabitsOrder);
 
-  const handleMove = useCallback(
-    (_id: string, from: number, to: number) => {
-      reorderHabits(from, to);
+  const handleDrop = useCallback(
+    (_id: string, _position: number, allPositions?: Record<string, number>) => {
+      if (allPositions) applyHabitsOrder(allPositions);
     },
-    [reorderHabits]
+    [applyHabitsOrder]
   );
 
   const renderItem = useCallback(
@@ -41,7 +41,8 @@ export default function HabitsScreen() {
           id={id}
           data={habit}
           {...sortableProps}
-          onMove={handleMove}
+          onDrop={handleDrop}
+          containerHeight={listHeight > 0 ? listHeight : undefined}
         >
           <HabitRow
             habit={habit}
@@ -49,7 +50,7 @@ export default function HabitsScreen() {
             onToggle={handleToggle}
             onPress={(h) => setSelectedHabitId(h.id)}
             onLongPress={(h) => requestDelete(h.id)}
-            className="h-[76px]"
+            className="h-[72px]"
             handle={
               <SortableItem.Handle>
                 <View className="items-center justify-center mr-1" style={{ width: 24, height: 40 }}>
@@ -61,39 +62,42 @@ export default function HabitsScreen() {
         </SortableItem>
       );
     },
-    [handleMove, handleToggle, requestDelete, completedTodaySet]
+    [handleDrop, handleToggle, requestDelete, completedTodaySet, listHeight]
   );
 
   return (
-    <View className="flex-1 bg-bg-canvas">
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{
-          paddingBottom: insets.bottom + 120,
-          paddingTop: Math.max(insets.top, 20),
-          paddingHorizontal: 16,
-        }}
-      >
-        <View className="mb-6 items-center mt-2">
-          <Text className="text-heading-xl text-text-primary font-bold">Habits</Text>
-          <Text className="text-body-sm text-text-muted mt-1">
-            All your tracked habits
-          </Text>
-        </View>
+    <View
+      className="flex-1 bg-bg-canvas"
+      style={{ paddingTop: Math.max(insets.top, 20) }}
+    >
+      <View className="mb-6 items-center mt-2 px-4">
+        <Text className="text-heading-xl text-text-primary font-bold">Habits</Text>
+        <Text className="text-body-sm text-text-muted mt-1">
+          All your tracked habits
+        </Text>
+      </View>
 
-        <View className="rounded-2xl border border-border-hairline overflow-hidden">
-          {sortedHabits.length > 0 ? (
-            <GestureHandlerRootView>
-              <Sortable
-                data={sortedHabits}
-                renderItem={renderItem}
-                itemHeight={ITEM_HEIGHT}
-                useFlatList={false}
-                style={{ backgroundColor: "transparent" }}
-                contentContainerStyle={{ backgroundColor: "transparent" }}
-              />
-            </GestureHandlerRootView>
-          ) : (
+      <View
+        className="flex-1 px-4"
+        style={{ paddingBottom: insets.bottom + 120 }}
+      >
+        {sortedHabits.length > 0 ? (
+          <View
+            className="rounded-2xl border border-border-hairline overflow-hidden"
+            style={{ height: sortedHabits.length * ITEM_HEIGHT }}
+            onLayout={(e) => setListHeight(e.nativeEvent.layout.height)}
+          >
+            <Sortable
+              data={sortedHabits}
+              renderItem={renderItem}
+              itemHeight={ITEM_HEIGHT}
+              useFlatList={false}
+              style={{ backgroundColor: "transparent" }}
+              contentContainerStyle={{ backgroundColor: "transparent" }}
+            />
+          </View>
+        ) : (
+          <View className="rounded-2xl border border-border-hairline overflow-hidden">
             <View className="bg-bg-surface p-8 items-center justify-center">
               <Hexagon size={48} color="#6A6B6C" strokeWidth={1.5} className="mb-4" />
               <Text className="text-body-md text-text-muted text-center font-medium">
@@ -103,9 +107,10 @@ export default function HabitsScreen() {
                 Tap the + button to create a new habit!
               </Text>
             </View>
-          )}
-        </View>
-      </ScrollView>
+          </View>
+        )}
+      </View>
+
       <HabitDetailSheet habitId={selectedHabitId} onClose={() => setSelectedHabitId(null)} />
     </View>
   );

@@ -447,21 +447,6 @@ export function HabitForm({
           </View>
         </Pressable>
 
-        <View className="mb-6 bg-bg-surface border border-border-hairline p-4 rounded-xl opacity-50">
-          <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-body-md font-semibold text-text-primary">
-                Daily Reminder
-              </Text>
-              <Text className="text-body-sm text-text-muted mt-0.5">
-                Coming Soon
-              </Text>
-            </View>
-            <View className="w-12 h-7 rounded-full bg-neutral-800 items-center justify-center">
-              <View className="w-5 h-5 rounded-full bg-neutral-700" />
-            </View>
-          </View>
-        </View>
       </ScrollView>
 
       <View
