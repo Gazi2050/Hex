@@ -1,12 +1,12 @@
 import { TextClassContext } from '@/components/ui/text';
 import { cn } from '@/lib/utils';
-import type { LucideIcon, LucideProps } from '@/components/icons';
+import type { LucideProps } from '@/components/icons';
 import { cssInterop } from 'nativewind';
 import * as React from 'react';
 
 type IconProps = LucideProps & {
-  as: LucideIcon;
-} & React.RefAttributes<LucideIcon>;
+  as: React.ElementType;
+} & React.RefAttributes<unknown>;
 
 function IconImpl({ as: IconComponent, ...props }: IconProps) {
   return <IconComponent {...props} />;

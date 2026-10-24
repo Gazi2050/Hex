@@ -1,4 +1,4 @@
-import { View, Pressable, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Pressable, KeyboardAvoidingView, Platform, InteractionManager } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHabitStore } from "@/lib/store";

@@ -22,7 +22,7 @@ function NativeOnlyAnimatedView(
     if (props.as === "Pressable"){
       return <AnimatedPressable {...props} />;
     }
-    return <Animated.View {...props} />;
+    return <Animated.View {...(props as React.ComponentProps<typeof Animated.View>)} />;
   }
 }
 
