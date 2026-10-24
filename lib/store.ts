@@ -70,49 +70,14 @@ const safeStorage = {
 
 export const MAX_HABITS = 8;
 
-const seedNow = new Date().toISOString();
-const seedToday = getLocalDateString();
-const seedHabit = (
-  id: string,
-  name: string,
-  iconName: string,
-  color: string,
-  frequency: number,
-  priority = false
-): Habit => ({
-  id,
-  name,
-  iconName,
-  color,
-  repeatDays: [true, true, true, true, true, true, true],
-  frequency,
-  priority,
-  description: "",
-  reminder: false,
-  streak: 0,
-  bestStreak: 0,
-  createdAt: seedNow,
-  createdAtDate: seedToday,
-});
-
-const SEED_HABITS: Habit[] = [
-  seedHabit("seed-1", "Morning Workout", "Dumbbell", "#F97316", 6, true),
-  seedHabit("seed-2", "Read 20 Pages", "BookOpen", "#A78BFA", 7),
-  seedHabit("seed-3", "Drink Water", "GlassWater", "#38BDF8", 7),
-  seedHabit("seed-4", "Meditate", "Brain", "#34D399", 5, true),
-  seedHabit("seed-5", "Sleep by 11", "Moon", "#FACC15", 7),
-];
-const SEED_HABITS_ORDER = SEED_HABITS.map((h) => h.id);
-const SEED_PRIORITY_ORDER = SEED_HABITS.filter((h) => h.priority).map((h) => h.id);
-
 export const useHabitStore = create<HabitState>()(
   persist(
     (set, get) => ({
-      habits: SEED_HABITS,
+      habits: [],
       logs: [],
       achievements: DEFAULT_ACHIEVEMENTS,
-      priorityOrder: SEED_PRIORITY_ORDER,
-      habitsOrder: SEED_HABITS_ORDER,
+      priorityOrder: [],
+      habitsOrder: [],
 
       addHabit: (newHabit) => {
         if (get().habits.length >= MAX_HABITS) return;
